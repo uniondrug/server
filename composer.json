@@ -13,7 +13,7 @@
     "php": ">=7.0",
     "ext-phalcon": "^3.2",
     "fastd/container": "^3.0",
-    "fastd/swoole": "^2.2",
+    "fastd/swoole": "^2.2@beta",
     "uniondrug/framework": "^1.0"
   },
   "autoload": {
