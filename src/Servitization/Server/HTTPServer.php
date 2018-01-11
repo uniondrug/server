@@ -35,6 +35,10 @@ class HTTPServer extends HTTP
         $request = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
 
         $response = $this->doRequest($request);
+
+        // Set Server header
+        $response->withHeader('Server', config()->get('server.vendor', 'UDS'));
+
         foreach ($response->getHeaders() as $key => $header) {
             $swooleResponse->header($key, $response->getHeaderLine($key));
         }
