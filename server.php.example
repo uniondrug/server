@@ -1,0 +1,32 @@
+<?php
+/**
+ * Swoole Server 配置文件demo
+ *
+ * 用法：复制到配置文件目录
+ */
+
+return [
+    'default'    => [
+        'host'      => 'http://0.0.0.0:9528',
+        'class'     => \UniondrugServer\Servitization\Server\HTTPServer::class,
+        'options'   => [
+            'pid_file'        => __DIR__ . '/../tmp/pid/server.pid',
+            'worker_num'      => 1,
+            'task_worker_num' => 1,
+        ],
+        'processes' => [
+
+        ],
+        'listeners' => [
+            [
+                'class' => \UniondrugServer\Servitization\Server\ManagerServer::class,
+                'host'  => 'tcp://0.0.0.0:9532',
+            ],
+        ],
+    ],
+    'production' => [
+        'options' => [
+            'worker_num' => 5,
+        ],
+    ],
+];

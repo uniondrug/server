@@ -1,0 +1,99 @@
+#!/usr/bin/env php
+<?php
+/**
+ * @author    jan huang <bboyjanhuang@gmail.com>
+ * @copyright 2016
+ *
+ * @link      https://www.github.com/janhuang
+ * @link      https://fastdlabs.com
+ */
+
+set_time_limit(0);
+date_default_timezone_set('PRC');
+
+// autoload composer
+foreach ([
+             __DIR__ . '/../../autoload.php',
+             __DIR__ . '/../vendor/autoload.php',
+             __DIR__ . '/vendor/autoload.php',
+         ] as $value) {
+    if (file_exists($value)) {
+        define('COMPOSER_INSTALL', $value);
+        break;
+    }
+}
+
+if (!defined('COMPOSER_INSTALL')) {
+    fwrite(STDERR,
+        'You need to set up the project dependencies using the following commands:' . PHP_EOL .
+        'wget http://getcomposer.org/composer.phar' . PHP_EOL .
+        'php composer.phar install' . PHP_EOL
+    );
+}
+
+include COMPOSER_INSTALL;
+
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputDefinition;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use UniondrugServer\Application;
+use UniondrugServer\Server;
+
+$logo = <<<LOGO
+
+   __  __      _             ____                  
+  / / / /___  (_)___  ____  / __ \_______  ______ _
+ / / / / __ \/ / __ \/ __ \/ / / / ___/ / / / __ `/
+/ /_/ / / / / / /_/ / / / / /_/ / /  / /_/ / /_/ / 
+\____/_/ /_/_/\____/_/ /_/_____/_/   \__,_/\__, /  
+                                          /____/   
+                                                    
+LOGO;
+$output = new ConsoleOutput();
+
+try {
+    $input = new ArgvInput(null, new InputDefinition([
+        new InputArgument('action', InputArgument::OPTIONAL, 'The server action', 'status'),
+        new InputOption('daemon', 'd', InputOption::VALUE_NONE, 'Do not ask any interactive question'),
+        new InputOption('path', 't', InputOption::VALUE_OPTIONAL, 'Web root relative path', getcwd()),
+        new InputOption('env', 'e', InputOption::VALUE_OPTIONAL, 'Enviroment', 'development'),
+        new InputOption('help', 'h', InputOption::VALUE_OPTIONAL, 'Show help', null),
+    ]));
+
+    $output->writeln(sprintf("%s <info>%s</info>", $logo, "v1.0.0"));
+
+    if ($input->hasParameterOption(['--help', '-h'])) {
+        $output->writeln("<comment>Usage:</comment>");
+        $output->writeln(" server [command] [option]");
+        $output->writeln("");
+        $output->writeln("<comment>Options:</comment>");
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-d, --daemon", " ", "Run server as daemon, Do not ask any interactive question"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-t, --path", "   ", "Web root relative path. Default: <comment>" . getcwd() . "</comment>"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-e, --env", "    ", "Environment. Default: <comment>development</comment>"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-h, --help", "   ", "Show this help"));
+        $output->writeln("");
+        $output->writeln("<comment>Available commands:</comment>");
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "start", " ", "Start the server"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "stop", "  ", "Stop the server"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "reload", "", "Reload the server"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "status", "", "Show the server status [<comment>default</comment>]"));
+        exit(0);
+    }
+
+    $path = $input->getOption('path');
+    $env = $input->getOption('env');
+    putenv("APP_ENV=$env");
+
+    $server = new Server(new Application($path));
+    $server->run($input);
+} catch (\Exception $e) {
+    $output->writeln('');
+    $output->writeln(sprintf("<info>Oho, Some error found:</info> <error>%s</error>", $e->getMessage()));
+    $output->writeln('');
+    $output->writeln("<info>Trace: </info>");
+    $output->writeln('');
+    $output->write($e->getTraceAsString());
+    $output->writeln('');
+}

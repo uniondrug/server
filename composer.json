@@ -1,0 +1,34 @@
+{
+  "name": "uniondrug/server",
+  "description": "Uniondrug server. Based on Swoole, with FastD support.",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Uniondrug R&D Team",
+      "email": "dev@uniondrug.cn"
+    }
+  ],
+  "require": {
+    "php": ">=7.0",
+    "ext-phalcon": "^3.2",
+    "fastd/container": "^3.0",
+    "fastd/swoole": "^2.2@beta",
+    "uniondrug/framework": "^1.7",
+    "uniondrug/service": "~1.4",
+    "uniondrug/service-client": "~1.4",
+    "uniondrug/service-server": "~1.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "UniondrugServer\\": "src"
+    },
+    "files": [
+      "helpers.php"
+    ]
+  },
+  "bin": [
+    "server"
+  ]
+}
