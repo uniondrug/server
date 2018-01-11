@@ -1,7 +1,6 @@
 {
   "name": "uniondrug/server",
   "description": "Uniondrug server. Based on Swoole, with FastD support.",
-  "minimum-stability": "stable",
   "license": "MIT",
   "type": "library",
   "authors": [
