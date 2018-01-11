@@ -1,6 +1,6 @@
 {
   "name": "uniondrug/server",
-  "description": "Uniondrug server. Based on Swoole, with FastD support.",
+  "description": "Uniondrug server. Based on Swoole, supported by FastD.",
   "license": "MIT",
   "type": "library",
   "authors": [
@@ -13,8 +13,8 @@
     "php": ">=7.0",
     "ext-phalcon": "^3.2",
     "fastd/container": "^3.0",
-    "fastd/swoole": "dev-master",
-    "uniondrug/framework": "dev-master"
+    "fastd/swoole": "^2.2@beta",
+    "uniondrug/framework": "^1.10"
   },
   "autoload": {
     "psr-4": {
