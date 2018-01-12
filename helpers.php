@@ -64,7 +64,7 @@ function config()
  */
 function request()
 {
-    return container()->get('request');
+    return app()->get('request');
 }
 
 /**
@@ -74,7 +74,7 @@ function request()
  */
 function response()
 {
-    return container()->get('response');
+    return app()->get('response');
 }
 
 /**
