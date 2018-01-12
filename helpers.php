@@ -127,7 +127,7 @@ function logger($name = null)
         return container()->get('logger', [$name]);
     }
 
-    return container()->getShared('logger');
+    return container()->get('logger');
 }
 
 /**

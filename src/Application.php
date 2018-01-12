@@ -23,6 +23,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Throwable;
 use UniondrugServer\Wrapper\Config;
+use UniondrugServer\Wrapper\Request;
 
 /**
  * Class Application.
@@ -98,6 +99,10 @@ class Application extends Container
     {
         if (!$this->booted) {
             $this->add('container', new \Pails\Container($this->path));
+
+            // 使用改写的PhalconRequest，原生的有内存泄漏
+            container()->setShared('request', Request::class);
+
             $this->add('dispatcher', (new \Pails\Application(container()))->boot());
             $this->add('config', new Config());
             $this->add('client', new Client());
@@ -147,15 +152,11 @@ class Application extends Container
         try {
             // 转换数据给Phalcon
             $this->wrapRequest($request);
+
             $response = $this->get('dispatcher')->handle();
             if (!$response instanceof \Phalcon\Http\Response) {
                 $response = new \Phalcon\Http\Response();
             }
-            logger()->log(Logger::DEBUG, $response->getStatusCode(), [
-                'method' => $request->getMethod(),
-                'path'   => $request->getUri()->getPath(),
-            ]);
-
             $response = $this->wrapResponse($response);
         } catch (Exception $exception) {
             $response = $this->handleException($exception);
@@ -234,6 +235,7 @@ class Application extends Container
      */
     public function shutdown(ServerRequestInterface $request, $response)
     {
+        $_GET = $_POST = $_REQUEST = $_FILES = $_SERVER = [];
         $this->offsetUnset('request');
         $this->offsetUnset('response');
         if ($this->offsetExists('exception')) {
@@ -256,6 +258,10 @@ class Application extends Container
         $_COOKIE = $request->getCookieParams();
         $_REQUEST = array_merge_recursive($_GET, $_POST, $_COOKIE);
         $_SERVER = $request->getServerParams();
+
+        // set rewrite url for phalcon
+        $_GET['_url'] = $_SERVER['REQUEST_URI'];
+        
         if (count($files = $request->getUploadedFiles())) {
             $_FILES = [];
             foreach ($files as $name => $file) {
@@ -278,7 +284,8 @@ class Application extends Container
      */
     public function wrapResponse(\Phalcon\Http\Response $response)
     {
-        $wrappedResponse = new Response($response->getContent(), $response->getStatusCode() ?: 200, $response->getHeaders()->toArray());
+        $statusCode = (int)$response->getStatusCode();
+        $wrappedResponse = new Response($response->getContent(), $statusCode ?: 200, $response->getHeaders()->toArray());
         if ($response->getCookies()) {
             foreach ($response->getCookies() as $cookie) {
                 $wrappedResponse->withCookie($cookie->getName(), $cookie->getValue(),
@@ -286,6 +293,7 @@ class Application extends Container
             }
         }
 
+        unset($response);
         return $wrappedResponse;
     }
 }
