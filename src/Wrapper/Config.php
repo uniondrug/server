@@ -3,6 +3,7 @@
  * 封装Phalcon\Config
  *
  */
+
 namespace UniondrugServer\Wrapper;
 
 class Config
@@ -15,7 +16,7 @@ class Config
      */
     public function get($key, $defaultValue = null)
     {
-        return $this->toArray(container()->get('config')->path($key, $defaultValue));
+        return $this->toArray(PhalconDi()->get('config')->path($key, $defaultValue));
     }
 
     /**
@@ -33,6 +34,7 @@ class Config
                 $value[$k] = $this->toArray($v);
             }
         }
+
         return $value;
     }
 }

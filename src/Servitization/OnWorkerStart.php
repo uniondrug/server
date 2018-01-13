@@ -30,18 +30,18 @@ trait OnWorkerStart
             $server->tick($interval * 1000, function ($id, $params = []) {
                 $pid = getmypid();
                 foreach (['db', 'dbSlave'] as $dbServiceName) {
-                    if (container()->has($dbServiceName)) {
+                    if (PhalconDi()->has($dbServiceName)) {
                         $tryTimes = 0;
                         $maxRetry = config()->get('database.max_retry', 3);
                         while ($tryTimes < $maxRetry) {
                             try {
-                                @container()->getShared($dbServiceName)->query("select 1");
+                                @PhalconDi()->getShared($dbServiceName)->query("select 1");
                             } catch (\Exception $e) {
                                 logger('database')->alert("[$pid] [$dbServiceName] connection lost ({$e->getMessage()})");
                                 if (preg_match("/(errno=32 Broken pipe)|(MySQL server has gone away)/i", $e->getMessage())) {
                                     $tryTimes++;
-                                    @container()->getShared($dbServiceName)->close();
-                                    @container()->getShared($dbServiceName)->connect();
+                                    @PhalconDi()->getShared($dbServiceName)->close();
+                                    @PhalconDi()->getShared($dbServiceName)->connect();
                                     logger('database')->alert("[$pid] [$dbServiceName] try to reconnect[$tryTimes]");
                                     continue;
                                 } else {

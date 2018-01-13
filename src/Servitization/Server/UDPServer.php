@@ -3,17 +3,17 @@
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2016
  *
- * @see      https://www.github.com/janhuang
- * @see      https://fastdlabs.com
+ * @see       https://www.github.com/janhuang
+ * @see       https://fastdlabs.com
  */
 
 namespace UniondrugServer\Servitization\Server;
 
 use FastD\Http\ServerRequest;
 use FastD\Packet\Json;
-use UniondrugServer\Servitization\OnWorkerStart;
 use FastD\Swoole\Server\UDP;
 use swoole_server;
+use UniondrugServer\Servitization\OnWorkerStart;
 
 /**
  * Class UDPServer.
@@ -24,8 +24,8 @@ class UDPServer extends UDP
 
     /**
      * @param swoole_server $server
-     * @param $data
-     * @param $clientInfo
+     * @param               $data
+     * @param               $clientInfo
      *
      * @return int|mixed
      *

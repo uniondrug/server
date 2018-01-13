@@ -28,26 +28,6 @@ function version()
 }
 
 /**
- * Phalcon容器
- *
- * @return \Pails\Container
- */
-function container()
-{
-    return app()->get('container');
-}
-
-/**
- * Phalcon路由器
- *
- * @return \Phalcon\Mvc\Router
- */
-function router()
-{
-    return container()->get('router');
-}
-
-/**
  * 配置文件读取
  *
  * @return \UniondrugServer\Wrapper\Config
@@ -86,6 +66,38 @@ function exception()
 }
 
 /**
+ * @param null $uri
+ * @param bool $async
+ * @param bool $keep
+ *
+ * @return Client
+ */
+function client($uri = null, $async = false, $keep = false)
+{
+    if (null !== $uri) {
+        return new Client($uri, $async, $keep);
+    }
+
+    return app()->get('client');
+}
+
+/**
+ * @return \FastD\Swoole\Server
+ */
+function server()
+{
+    return app()->get('server');
+}
+
+/**
+ * @return swoole_server
+ */
+function swoole()
+{
+    return server()->getSwoole();
+}
+
+/**
  * @param array $content
  * @param int   $statusCode
  *
@@ -119,45 +131,33 @@ function abort($statusCode, $message = null)
 }
 
 /**
+ * Phalcon容器
+ *
+ * @return \Pails\Container
+ */
+function PhalconDi()
+{
+    return app()->get('PhalconDi');
+}
+
+/**
+ * Phalcon路由器
+ *
+ * @return \Phalcon\Mvc\Router
+ */
+function router()
+{
+    return PhalconDi()->get('router');
+}
+
+/**
  * @return \Phalcon\Logger\Adapter
  */
 function logger($name = null)
 {
     if ($name) {
-        return container()->get('logger', [$name]);
+        return PhalconDi()->get('logger', [$name]);
     }
 
-    return container()->get('logger');
-}
-
-/**
- * @param null $uri
- * @param bool $async
- * @param bool $keep
- *
- * @return Client
- */
-function client($uri = null, $async = false, $keep = false)
-{
-    if (null !== $uri) {
-        return new Client($uri, $async, $keep);
-    }
-
-    return app()->get('client');
-}
-
-/**
- * @return \FastD\Swoole\Server
- */
-function server()
-{
-    return app()->get('server');
-}
-
-/**
- * @return swoole_server
- */
-function swoole()
-{
-    return server()->getSwoole();
+    return PhalconDi()->get('logger');
 }

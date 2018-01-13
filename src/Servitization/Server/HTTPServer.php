@@ -3,8 +3,8 @@
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2016
  *
- * @see      https://www.github.com/janhuang
- * @see      https://fastdlabs.com
+ * @see       https://www.github.com/janhuang
+ * @see       https://fastdlabs.com
  */
 
 namespace UniondrugServer\Servitization\Server;
@@ -12,10 +12,10 @@ namespace UniondrugServer\Servitization\Server;
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
 use FastD\Swoole\Server\HTTP;
-use UniondrugServer\Servitization\OnWorkerStart;
 use Psr\Http\Message\ServerRequestInterface;
 use swoole_http_request;
 use swoole_http_response;
+use UniondrugServer\Servitization\OnWorkerStart;
 
 /**
  * Class HTTPServer.

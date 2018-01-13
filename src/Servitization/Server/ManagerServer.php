@@ -3,15 +3,15 @@
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2016
  *
- * @see      https://www.github.com/janhuang
- * @see      https://fastdlabs.com
+ * @see       https://www.github.com/janhuang
+ * @see       https://fastdlabs.com
  */
 
 namespace UniondrugServer\Servitization\Server;
 
-use UniondrugServer\Application;
 use FastD\Swoole\Server\TCP;
 use swoole_server;
+use UniondrugServer\Application;
 
 /**
  * Class MonitorStatusServer.
@@ -20,19 +20,19 @@ class ManagerServer extends TCP
 {
     /**
      * @param swoole_server $server
-     * @param $fd
-     * @param $from_id
+     * @param               $fd
+     * @param               $from_id
      */
     public function doConnect(swoole_server $server, $fd, $from_id)
     {
-        $server->send($fd, sprintf('server: %s %s', app()->getName(), Application::VERSION).PHP_EOL);
+        $server->send($fd, sprintf('server: %s %s', app()->getName(), Application::VERSION) . PHP_EOL);
     }
 
     /**
      * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
+     * @param               $fd
+     * @param               $data
+     * @param               $from_id
      *
      * @return mixed
      */
@@ -53,7 +53,7 @@ class ManagerServer extends TCP
                 $info = $server->stats();
                 $status = '';
                 foreach ($info as $key => $value) {
-                    $status .= '['.date('Y-m-d H:i:s').']: '.$key.': '.$value.PHP_EOL;
+                    $status .= '[' . date('Y-m-d H:i:s') . ']: ' . $key . ': ' . $value . PHP_EOL;
                 }
                 $server->send($fd, $status);
 

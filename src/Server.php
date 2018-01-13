@@ -3,15 +3,15 @@
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2016
  *
- * @see      https://www.github.com/janhuang
- * @see      https://fastdlabs.com
+ * @see       https://www.github.com/janhuang
+ * @see       https://fastdlabs.com
  */
 
 namespace UniondrugServer;
 
-use UniondrugServer\Servitization\Server\HTTPServer;
 use swoole_server;
 use Symfony\Component\Console\Input\InputInterface;
+use UniondrugServer\Servitization\Server\HTTPServer;
 
 /**
  * Class App.
@@ -47,7 +47,6 @@ class Server
 
         $this->initListeners();
         $this->initProcesses();
-
     }
 
     /**
@@ -74,7 +73,7 @@ class Server
         $listeners = config()->get('server.listeners', []);
         foreach ($listeners as $listener) {
             $this->server->listen(new $listener['class'](
-                app()->getName().' ports',
+                app()->getName() . ' ports',
                 $listener['host'],
                 isset($listener['options']) ? $listener['options'] : []
             ));
@@ -90,7 +89,7 @@ class Server
     {
         $processes = config()->get('server.processes', []);
         foreach ($processes as $process) {
-            $this->server->process(new $process(app()->getName().' process'));
+            $this->server->process(new $process(app()->getName() . ' process'));
         }
 
         return $this;

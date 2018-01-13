@@ -16,12 +16,11 @@ use FastD\Container\ServiceProviderInterface;
 use FastD\Http\HttpException;
 use FastD\Http\Response;
 use FastD\Http\ServerRequest;
-use Phalcon\Logger;
-use UniondrugServer\Servitization\Client\Client;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Throwable;
+use UniondrugServer\Servitization\Client\Client;
 use UniondrugServer\Wrapper\Config;
 use UniondrugServer\Wrapper\Request;
 
@@ -98,23 +97,29 @@ class Application extends Container
     public function bootstrap()
     {
         if (!$this->booted) {
-            $this->add('container', new \Pails\Container($this->path));
+            $this->add('PhalconDi', new \Pails\Container($this->path));
 
             // 使用改写的PhalconRequest，原生的有内存泄漏
-            container()->setShared('request', Request::class);
+            PhalconDi()->setShared('request', Request::class);
 
-            $this->add('dispatcher', (new \Pails\Application(container()))->boot());
+            // 初始化Phalcon应用
+            {
+                $phalconApplication = new \Pails\Application(PhalconDi());
+                // Phalcon Version > 3.3.0
+                //$phalconApplication->sendHeadersOnHandleRequest(false);
+                //$phalconApplication->sendCookiesOnHandleRequest(false);
+                $phalconApplication->boot();
+                $this->add('PhalconApplication', $phalconApplication);
+            }
+
+            //
             $this->add('config', new Config());
             $this->add('client', new Client());
 
-            // 设置时区
             date_default_timezone_set(config()->get('app.timezone', 'UTC'));
             $this->name = config()->get('name', 'UnionDrug-Server');
 
-            //
             $this->registerExceptionHandler();
-
-            //
             $this->booted = true;
         }
     }
@@ -153,11 +158,8 @@ class Application extends Container
             // 转换数据给Phalcon
             $this->wrapRequest($request);
 
-            $response = $this->get('dispatcher')->handle();
-            if (!$response instanceof \Phalcon\Http\Response) {
-                $response = new \Phalcon\Http\Response();
-            }
-            $response = $this->wrapResponse($response);
+            // PhalconApplication::handle() return a Response|false, or throw Exception
+            $response = $this->wrapResponse($this->get('PhalconApplication')->handle());
         } catch (Exception $exception) {
             $response = $this->handleException($exception);
         } catch (Throwable $exception) {
@@ -166,6 +168,9 @@ class Application extends Container
         }
 
         $this->add('response', $response);
+
+        // 每次请求完之后，重置Response对象
+        PhalconDi()->getShared('response')->setStatusCode(200)->setContent(null)->resetHeaders();
 
         return $response;
     }
@@ -200,7 +205,7 @@ class Application extends Container
 
         $this->add('exception', $e);
 
-        logger()->log(Logger::ERROR, $e->getMessage(), $trace);
+        logger("framework")->error(sprintf("{msg} (code: {code}) at {file} ({line}): \n{trace}", $e->getMessage()), $trace);
 
         $statusCode = ($e instanceof HttpException) ? $e->getStatusCode() : $e->getCode();
 
@@ -261,7 +266,7 @@ class Application extends Container
 
         // set rewrite url for phalcon
         $_GET['_url'] = $_SERVER['REQUEST_URI'];
-        
+
         if (count($files = $request->getUploadedFiles())) {
             $_FILES = [];
             foreach ($files as $name => $file) {
@@ -278,22 +283,25 @@ class Application extends Container
     }
 
     /**
-     * @param \Phalcon\Http\Response $response
+     * @param bool|\Phalcon\Http\Response $response
      *
      * @return \FastD\Http\Response
      */
-    public function wrapResponse(\Phalcon\Http\Response $response)
+    public function wrapResponse($response)
     {
-        $statusCode = (int)$response->getStatusCode();
-        $wrappedResponse = new Response($response->getContent(), $statusCode ?: 200, $response->getHeaders()->toArray());
-        if ($response->getCookies()) {
-            foreach ($response->getCookies() as $cookie) {
-                $wrappedResponse->withCookie($cookie->getName(), $cookie->getValue(),
-                    $cookie->getExpiration(), $cookie->getPath(), $cookie->getDomain(), $cookie->getSecure(), $cookie->getHttpOnly());
+        if ($response instanceof \Phalcon\Http\Response) {
+            $statusCode = (int) $response->getStatusCode();
+            $wrappedResponse = new Response($response->getContent(), $statusCode ?: 200, $response->getHeaders()->toArray());
+            if ($response->getCookies()) {
+                foreach ($response->getCookies() as $cookie) {
+                    $wrappedResponse->withCookie($cookie->getName(), $cookie->getValue(),
+                        $cookie->getExpiration(), $cookie->getPath(), $cookie->getDomain(), $cookie->getSecure(), $cookie->getHttpOnly());
+                }
             }
+
+            return $wrappedResponse;
         }
 
-        unset($response);
-        return $wrappedResponse;
+        throw new \RuntimeException("Internal Error");
     }
 }

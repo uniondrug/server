@@ -3,18 +3,18 @@
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2016
  *
- * @see      https://www.github.com/janhuang
- * @see      https://fastdlabs.com
+ * @see       https://www.github.com/janhuang
+ * @see       https://fastdlabs.com
  */
 
 namespace UniondrugServer\Servitization\Server;
 
 use FastD\Http\ServerRequest;
 use FastD\Packet\Json;
-use UniondrugServer\Servitization\OnWorkerStart;
 use FastD\Swoole\Server\WebSocket;
 use swoole_server;
 use swoole_websocket_frame;
+use UniondrugServer\Servitization\OnWorkerStart;
 
 /**
  * Class WebSocketServer.

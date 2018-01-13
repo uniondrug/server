@@ -3,17 +3,17 @@
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2016
  *
- * @see      https://www.github.com/janhuang
- * @see      https://fastdlabs.com
+ * @see       https://www.github.com/janhuang
+ * @see       https://fastdlabs.com
  */
 
 namespace UniondrugServer\Servitization\Server;
 
 use FastD\Http\ServerRequest;
 use FastD\Packet\Json;
-use UniondrugServer\Servitization\OnWorkerStart;
 use FastD\Swoole\Server\TCP;
 use swoole_server;
+use UniondrugServer\Servitization\OnWorkerStart;
 
 /**
  * Class TCPServer.
@@ -24,9 +24,9 @@ class TCPServer extends TCP
 
     /**
      * @param swoole_server $server
-     * @param $fd
-     * @param $data
-     * @param $from_id
+     * @param               $fd
+     * @param               $data
+     * @param               $from_id
      *
      * @return int|mixed
      *
