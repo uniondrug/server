@@ -15,7 +15,9 @@ use FastD\Swoole\Server\HTTP;
 use Psr\Http\Message\ServerRequestInterface;
 use swoole_http_request;
 use swoole_http_response;
+use swoole_server;
 use UniondrugServer\Servitization\OnWorkerStart;
+use UniondrugServer\Task;
 
 /**
  * Class HTTPServer.
@@ -61,5 +63,39 @@ class HTTPServer extends HTTP
     public function doRequest(ServerRequestInterface $serverRequest)
     {
         return app()->handleRequest($serverRequest);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function doTask(swoole_server $server, $task, $taskId, $workerId)
+    {
+        $TaskWorkerId = $server->worker_id;
+
+        logger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . serialize($task));
+
+        if (is_object($task) && $task instanceof Task) {
+            try {
+                return $task->handle();
+            } catch (\Exception $e) {
+                logger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Handle task failed. Error: " . $e->getMessage());
+
+                return false;
+            }
+        } else {
+            logger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Data is not a valid  Task object");
+
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function doFinish(swoole_server $server, $data, $taskId)
+    {
+        $workerId = $server->worker_id;
+
+        logger("framework")->debug("[Worker $workerId] task $taskId finished, with data: " . serialize($data));
     }
 }

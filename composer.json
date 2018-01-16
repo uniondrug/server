@@ -26,11 +26,5 @@
   },
   "bin": [
     "server"
-  ],
-  "scripts": {
-    "post-install-cmd": [
-      "php -r \"copy('server.php.example', 'config/server.php');\"",
-      "php -r \"copy('exception.php.example', 'config/exception.php');\""
-    ]
-  }
+  ]
 }

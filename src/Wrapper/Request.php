@@ -10,6 +10,18 @@ use Phalcon\Http\Request\Exception;
 
 class Request extends \Phalcon\Http\Request
 {
+    public function setRawBody($body = null)
+    {
+        $this->_rawBody = $body;
+        return $this;
+    }
+
+    public function setPutCache($data = null)
+    {
+        $this->_putCache = $data;
+        return $this;
+    }
+
     public function getMethodReplacement()
     {
         $returnMethod = "";

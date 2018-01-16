@@ -1,10 +1,12 @@
 <?php
 /**
- * @author    jan huang <bboyjanhuang@gmail.com>
- * @copyright 2016
+ * 基于Swoole的应用。从FastD移植过来。为适配Phalcon，增加了输入(Request)输出(Response)的转换功能。
  *
- * @see       https://www.github.com/janhuang
- * @see       https://fastdlabs.com
+ * @author    XueronNi <xueronni@uniondrug.cn>
+ * @copyright 2018
+ *
+ * @see       https://www.uniondrug.cn
+ * @see       https://github.com/uniondrug/server
  */
 
 namespace UniondrugServer;
@@ -112,7 +114,7 @@ class Application extends Container
                 $this->add('PhalconApplication', $phalconApplication);
             }
 
-            //
+            // 初始化客户端和配置文件服务
             $this->add('config', new Config());
             $this->add('client', new Client());
 
@@ -124,6 +126,9 @@ class Application extends Container
         }
     }
 
+    /**
+     * 设置异常处理方法
+     */
     protected function registerExceptionHandler()
     {
         error_reporting(-1);
@@ -169,7 +174,9 @@ class Application extends Container
 
         $this->add('response', $response);
 
-        // 每次请求完之后，重置Response对象
+        // 每次请求完之后，重置Request和Response对象，清空超全局变量
+        $_GET = $_POST = $_REQUEST = $_FILES = $_SERVER = [];
+        PhalconDi()->getShared('request')->setRawBody(null)->setPutCache(null);
         PhalconDi()->getShared('response')->setStatusCode(200)->setContent(null)->resetHeaders();
 
         return $response;
@@ -240,7 +247,6 @@ class Application extends Container
      */
     public function shutdown(ServerRequestInterface $request, $response)
     {
-        $_GET = $_POST = $_REQUEST = $_FILES = $_SERVER = [];
         $this->offsetUnset('request');
         $this->offsetUnset('response');
         if ($this->offsetExists('exception')) {
@@ -258,15 +264,28 @@ class Application extends Container
      */
     public function wrapRequest(ServerRequestInterface $request)
     {
+        // 设置原始POST的BODY数据
+        PhalconDi()->getShared('request')->setRawBody((string) $request->getBody());
+
+        // 设置超全局变量 GET POST COOKIE SERVER REQUEST
         $_GET = $request->getQueryParams();
         $_POST = $request->getParsedBody();
         $_COOKIE = $request->getCookieParams();
         $_REQUEST = array_merge_recursive($_GET, $_POST, $_COOKIE);
         $_SERVER = $request->getServerParams();
 
-        // set rewrite url for phalcon
+        // 设置Headers
+        foreach ($request->getHeaders() as $key => $value) {
+            $serverKey = 'HTTP_' . strtoupper($key);
+            if (!isset($_SERVER[$serverKey])) {
+                $_SERVER[$serverKey] = $request->getHeaderLine($key); // getHeaderLine return a string.
+            }
+        }
+
+        // 为PHALCON设置rewrite路径
         $_GET['_url'] = $_SERVER['REQUEST_URI'];
 
+        // 上传的文件处理
         if (count($files = $request->getUploadedFiles())) {
             $_FILES = [];
             foreach ($files as $name => $file) {
