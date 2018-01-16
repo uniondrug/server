@@ -38,7 +38,7 @@ Available commands:
 
 ## 配置
 
-`server.php` 中配置的是Swoole服务器的运行参数，详细参数请参考swoole文档：
+`server.php` 中配置的是Swoole服务器的运行参数，详细参数请参考`swoole`文档：
 
 ```php
 return [
@@ -96,3 +96,36 @@ return [
     ],
 ];
 ```
+
+### 数据库
+
+Swoole的Worker会保持数据库的长连接，如果长时间服务器没有请求发生，可能会出现数据库服务器断开连接的情况。
+
+可以通过在数据库的配置文件，增加一个参数，启动定时器来让worker进程与数据库服务器保持心跳。配置文件：`database.php`，配置参数 `interval`。参数为0时不启动定时器，大于0时，作为心跳间隔，单位：秒。
+
+```php
+return [
+    'default'    => [
+        'adapter'    => 'mysql',
+        'debug'      => true,
+        'useSlave'   => false,
+        'interval'   => 0,
+        'connection' => [
+            'host'     => '127.0.0.1',
+            'port'     => 3306,
+            'username' => 'root',
+            'password' => '',
+            'dbname'   => 'dbname',
+            'charset'  => 'utf8',
+        ],
+    ],
+];
+```
+
+### 任务分发
+
+### 进程管理
+
+### 进程间通信
+
+
