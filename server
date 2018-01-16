@@ -42,14 +42,12 @@ use UniondrugServer\Application;
 use UniondrugServer\Server;
 
 $logo = <<<LOGO
-
    __  __      _             ____                  
   / / / /___  (_)___  ____  / __ \_______  ______ _
  / / / / __ \/ / __ \/ __ \/ / / / ___/ / / / __ `/
 / /_/ / / / / / /_/ / / / / /_/ / /  / /_/ / /_/ / 
 \____/_/ /_/_/\____/_/ /_/_____/_/   \__,_/\__, /  
-                                          /____/   
-                                                    
+                                          /____/   Server
 LOGO;
 $output = new ConsoleOutput();
 
@@ -62,7 +60,7 @@ try {
         new InputOption('help', 'h', InputOption::VALUE_OPTIONAL, 'Show help', null),
     ]));
 
-    $output->writeln(sprintf("%s <info>%s</info>", $logo, "v1.0.0"));
+    $output->writeln(sprintf("%s <info>%s</info>", $logo, "1.0.0"));
 
     if ($input->hasParameterOption(['--help', '-h'])) {
         $output->writeln("<comment>Usage:</comment>");
@@ -89,6 +87,14 @@ try {
     $server = new Server(new Application($path));
     $server->run($input);
 } catch (\Exception $e) {
+    $output->writeln('');
+    $output->writeln(sprintf("<info>Oho, Some error found:</info> <error>%s</error>", $e->getMessage()));
+    $output->writeln('');
+    $output->writeln("<info>Trace: </info>");
+    $output->writeln('');
+    $output->write($e->getTraceAsString());
+    $output->writeln('');
+} catch (\Error $e) {
     $output->writeln('');
     $output->writeln(sprintf("<info>Oho, Some error found:</info> <error>%s</error>", $e->getMessage()));
     $output->writeln('');
