@@ -118,7 +118,7 @@ class Application extends Container
             $this->add('config', new Config());
             $this->add('client', new Client());
 
-            date_default_timezone_set(config()->get('app.timezone', 'UTC'));
+            date_default_timezone_set(config()->get('app.timezone', 'PRC'));
             $this->name = config()->get('name', 'UnionDrug-Server');
 
             $this->registerExceptionHandler();
