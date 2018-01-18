@@ -8,9 +8,8 @@ return [
         'response' => function (Exception $e) {
             return [
                 'error'    => $e->getMessage(),
-                'errno'    => '-1',
+                'errno'    => $e->getCode() ?: '-1',
                 'dataType' => 'ERROR',
-                'code'     => $e->getCode(),
                 'file'     => $e->getFile(),
                 'line'     => $e->getLine(),
                 'trace'    => explode("\n", $e->getTraceAsString()),
@@ -18,11 +17,11 @@ return [
         },
         'log'      => function (Exception $e) {
             return [
-                'msg'   => $e->getMessage(),
-                'code'  => $e->getCode(),
+                'error' => $e->getMessage(),
+                'errno'  => $e->getCode(),
                 'file'  => $e->getFile(),
                 'line'  => $e->getLine(),
-                'trace' => explode("\n", $e->getTraceAsString()),
+                'trace' => $e->getTraceAsString(),
             ];
         },
     ],

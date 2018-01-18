@@ -165,10 +165,7 @@ class Application extends Container
 
             // PhalconApplication::handle() return a Response|false, or throw Exception
             $response = $this->wrapResponse($this->get('PhalconApplication')->handle());
-        } catch (Exception $exception) {
-            $response = $this->handleException($exception);
-        } catch (Throwable $exception) {
-            $exception = new FatalThrowableError($exception);
+        } catch (\Throwable $exception) {
             $response = $this->handleException($exception);
         }
 
@@ -191,35 +188,31 @@ class Application extends Container
     }
 
     /**
-     * @param $e
+     * @param \Exception|\Throwable|\Error $e
      *
      * @return Response
      */
     public function handleException($e)
     {
-        if (!$e instanceof Exception) {
-            $e = new FatalThrowableError($e);
-        }
-
-        try {
-            $trace = call_user_func(config()->get('exception.log'), $e);
-        } catch (Exception $exception) {
-            $trace = [
-                'original' => explode("\n", $e->getTraceAsString()),
-                'handler'  => explode("\n", $exception->getTraceAsString()),
-            ];
-        }
-
+        // Save to container
         $this->add('exception', $e);
 
-        logger("framework")->error(sprintf("{msg} (code: {code}) at {file} ({line}): \n{trace}", $e->getMessage()), $trace);
+        // Log
+        $logContext = [
+            'error' => $e->getMessage(),
+            'errno' => $e->getCode(),
+            'file'  => $e->getFile(),
+            'line'  => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ];
+        logger("framework")->error("{error} ({errno}) in {file}:{line}\nStack trace:\n{trace}", $logContext);
 
-        $statusCode = ($e instanceof HttpException) ? $e->getStatusCode() : $e->getCode();
-
-        if (!array_key_exists($statusCode, Response::$statusTexts)) {
-            $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
+        // Response
+        if ($e instanceof \Error) {
+            $statusCode = 500;
+        } else {
+            $statusCode = 200;
         }
-
         return json(call_user_func(config()->get('exception.response'), $e), $statusCode);
     }
 
