@@ -47,7 +47,6 @@ class Process extends SwooleProcess
     {
         // use sigkill to close process, to keep mysql connection in parents process
         register_shutdown_function(function () {
-            logger("process")->info("Process stoped.");
             swoole_process::kill(getmypid(), SIGKILL);
         });
     }
