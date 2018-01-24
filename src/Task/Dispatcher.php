@@ -6,13 +6,14 @@
 
 namespace UniondrugServer\Task;
 
+use Phalcon\Di\Injectable;
 use UniondrugServer\Task;
 
 /**
  * Class Dispatcher
  *
  */
-class Dispatcher
+class Dispatcher extends Injectable
 {
     /**
      * Send a task.
@@ -26,9 +27,9 @@ class Dispatcher
         $taskId = swoole()->task($task);
         $workerId = swoole()->worker_id;
         if (false === $taskId) {
-            logger("framework")->error("[Worker $workerId] Dispatch task failed. Handler: $handler");
+            $this->getDI()->getLogger("framework")->error("[Worker $workerId] Dispatch task failed. Handler: $handler");
         } else {
-            logger("framework")->debug("[Worker $workerId] task $taskId send, handle: $handler");
+            $this->getDI()->getLogger("framework")->debug("[Worker $workerId] task $taskId send, handle: $handler");
         }
     }
 }

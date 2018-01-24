@@ -87,17 +87,12 @@ try {
 
     $server = new Server(new Application($path));
     $server->run($input);
-} catch (\Exception $e) {
+} catch (\Throwable $e) {
     $output->writeln('');
     $output->writeln(sprintf("<info>Oho, Some error found:</info> <error>%s</error>", $e->getMessage()));
     $output->writeln('');
-    $output->writeln("<info>Trace: </info>");
-    $output->writeln('');
-    $output->write($e->getTraceAsString());
-    $output->writeln('');
-} catch (\Error $e) {
-    $output->writeln('');
-    $output->writeln(sprintf("<info>Oho, Some error found:</info> <error>%s</error>", $e->getMessage()));
+    $output->writeln("<info> File: </info>" . $e->getFile());
+    $output->writeln("<info> Line: </info>" . $e->getLine());
     $output->writeln('');
     $output->writeln("<info>Trace: </info>");
     $output->writeln('');

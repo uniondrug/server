@@ -1,18 +1,19 @@
 <?php
 /**
- * Task.php
+ * Swoole的任务。
  *
  */
 
 namespace UniondrugServer;
 
+use Phalcon\Di\Injectable;
 use UniondrugServer\Task\TaskHandler;
 
 /**
  * Class Task
  *
  */
-class Task
+class Task extends Injectable
 {
     /**
      * 处理器的类名
@@ -62,20 +63,12 @@ class Task
     public function handle()
     {
         $handler = $this->handler;
-        if (app()->has($handler)) {
-            $handlerInstance = app()->get($handler);
-            if (is_object($handlerInstance) && $handlerInstance instanceof TaskHandler) {
-                return $handlerInstance->handle($this->data);
-            } else {
-                throw new \RuntimeException("Handler service " . $handler . " found, but is not a valid TaskHandler");
-            }
-        }
-        if (class_exists($handler) && is_subclass_of($handler, TaskHandler::class)) {
-            $handlerInstance = new $handler();
-            app()->add($handler, $handlerInstance);
 
+        $handlerInstance = $this->getDI()->getShared($handler);
+        if (is_object($handlerInstance) && $handlerInstance instanceof TaskHandler) {
             return $handlerInstance->handle($this->data);
+        } else {
+            throw new \RuntimeException("Handler service " . $handler . " found, but is not a valid TaskHandler");
         }
-        throw new \RuntimeException('No handle named ' . $handler);
     }
 }

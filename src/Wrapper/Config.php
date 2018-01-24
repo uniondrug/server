@@ -16,7 +16,7 @@ class Config
      */
     public function get($key, $defaultValue = null)
     {
-        return $this->toArray(PhalconDi()->get('config')->path($key, $defaultValue));
+        return $this->toArray(app()->getShared('config')->path($key, $defaultValue));
     }
 
     /**

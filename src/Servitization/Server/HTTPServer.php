@@ -39,7 +39,7 @@ class HTTPServer extends HTTP
         $response = $this->doRequest($request);
 
         // Set Server header
-        $response->withHeader('Server', config()->get('server.vendor', 'UDS'));
+        $response->withHeader('Server', app()->getConfig()->path('server.vendor', 'UDS'));
 
         foreach ($response->getHeaders() as $key => $header) {
             $swooleResponse->header($key, $response->getHeaderLine($key));
@@ -72,18 +72,18 @@ class HTTPServer extends HTTP
     {
         $TaskWorkerId = $server->worker_id;
 
-        logger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . serialize($task));
+        app()->getLogger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . serialize($task));
 
         if (is_object($task) && $task instanceof Task) {
             try {
                 return $task->handle();
             } catch (\Exception $e) {
-                logger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Handle task failed. Error: " . $e->getMessage());
+                app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Handle task failed. Error: " . $e->getMessage());
 
                 return false;
             }
         } else {
-            logger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Data is not a valid  Task object");
+            app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Data is not a valid  Task object");
 
             return false;
         }
@@ -96,6 +96,6 @@ class HTTPServer extends HTTP
     {
         $workerId = $server->worker_id;
 
-        logger("framework")->debug("[Worker $workerId] task $taskId finished, with data: " . serialize($data));
+        app()->getLogger("framework")->debug("[Worker $workerId] task $taskId finished, with data: " . serialize($data));
     }
 }

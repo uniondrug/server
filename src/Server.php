@@ -35,15 +35,15 @@ class Server
      */
     public function __construct(Application $application)
     {
-        $server = config()->get('server.class', HTTPServer::class);
+        $this->application = $application;
 
+        $server = $application->getConfig()->path('server.class', HTTPServer::class);
         $this->server = $server::createServer(
             $application->getName(),
-            config()->get('server.host'),
-            config()->get('server.options', [])
+            $application->getConfig()->path('server.host'),
+            $application->getConfig()->path('server.options')->toArray()
         );
-
-        $application->add('server', $this->server);
+        $application->setShared('server', $this->server);
 
         $this->initListeners();
         $this->initProcesses();
@@ -70,10 +70,10 @@ class Server
      */
     public function initListeners()
     {
-        $listeners = config()->get('server.listeners', []);
+        $listeners = $this->application->getConfig()->path('server.listeners', []);
         foreach ($listeners as $listener) {
             $this->server->listen(new $listener['class'](
-                app()->getName() . ' ports',
+                $this->application->getName() . ' ports',
                 $listener['host'],
                 isset($listener['options']) ? $listener['options'] : []
             ));
@@ -87,9 +87,9 @@ class Server
      */
     public function initProcesses()
     {
-        $processes = config()->get('server.processes', []);
+        $processes = $this->application->getConfig()->path('server.processes', []);
         foreach ($processes as $process) {
-            $this->server->process(new $process(app()->getName() . ' process'));
+            $this->server->process(new $process($this->application->getName() . ' process'));
         }
 
         return $this;
@@ -178,6 +178,10 @@ class Server
                 break;
             case 'stop':
                 $this->stop();
+
+                break;
+            case 'restart':
+                $this->restart();
 
                 break;
             case 'reload':

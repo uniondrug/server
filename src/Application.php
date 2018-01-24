@@ -12,18 +12,10 @@
 namespace UniondrugServer;
 
 use ErrorException;
-use Exception;
-use FastD\Container\Container;
-use FastD\Container\ServiceProviderInterface;
-use FastD\Http\HttpException;
 use FastD\Http\Response;
-use FastD\Http\ServerRequest;
+use Pails\Container;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
-use Throwable;
-use UniondrugServer\Servitization\Client\Client;
-use UniondrugServer\Wrapper\Config;
 use UniondrugServer\Wrapper\Request;
 
 /**
@@ -31,18 +23,6 @@ use UniondrugServer\Wrapper\Request;
  */
 class Application extends Container
 {
-    const VERSION = 'v1.0.0';
-
-    /**
-     * @var Application
-     */
-    public static $app;
-
-    /**
-     * @var string
-     */
-    protected $path;
-
     /**
      * @var string
      */
@@ -60,11 +40,7 @@ class Application extends Container
      */
     public function __construct($path)
     {
-        $this->path = $path;
-
-        static::$app = $this;
-
-        $this->add('app', $this);
+        parent::__construct($path);
 
         $this->bootstrap();
     }
@@ -90,7 +66,7 @@ class Application extends Container
      */
     public function getPath()
     {
-        return $this->path;
+        return $this->baseDir;
     }
 
     /**
@@ -99,27 +75,21 @@ class Application extends Container
     public function bootstrap()
     {
         if (!$this->booted) {
-            $this->add('PhalconDi', new \Pails\Container($this->path));
-
             // 使用改写的PhalconRequest，原生的有内存泄漏
-            PhalconDi()->setShared('request', Request::class);
+            $this->setShared('request', Request::class);
 
             // 初始化Phalcon应用
             {
-                $phalconApplication = new \Pails\Application(PhalconDi());
+                $phalconApplication = new \Pails\Application($this);
                 // Phalcon Version > 3.3.0
                 //$phalconApplication->sendHeadersOnHandleRequest(false);
                 //$phalconApplication->sendCookiesOnHandleRequest(false);
                 $phalconApplication->boot();
-                $this->add('PhalconApplication', $phalconApplication);
+                $this->setShared('PhalconApplication', $phalconApplication);
             }
 
-            // 初始化客户端和配置文件服务
-            $this->add('config', new Config());
-            $this->add('client', new Client());
-
-            date_default_timezone_set(config()->get('app.timezone', 'PRC'));
-            $this->name = config()->get('app.appName', 'UnionDrug-Server');
+            date_default_timezone_set($this->getConfig()->get('app.timezone', 'PRC'));
+            $this->name = $this->getConfig()->path('app.appName', 'UnionDrug-Server');
 
             $this->registerExceptionHandler();
             $this->booted = true;
@@ -141,24 +111,12 @@ class Application extends Container
     }
 
     /**
-     * @param ServiceProviderInterface[] $services
-     */
-    protected function registerServicesProviders(array $services)
-    {
-        foreach ($services as $service) {
-            $this->register(new $service());
-        }
-    }
-
-    /**
      * @param ServerRequestInterface $request
      *
-     * @return Response|\Symfony\Component\HttpFoundation\Response|\Phalcon\Http\Response
+     * @return ResponseInterface
      */
     public function handleRequest(ServerRequestInterface $request)
     {
-        $this->add('request', $request);
-
         try {
             // 转换数据给Phalcon
             $this->wrapRequest($request);
@@ -169,22 +127,21 @@ class Application extends Container
             $response = $this->handleException($exception);
         }
 
-        $this->add('response', $response);
-
-        // 每次请求完之后，重置Request和Response对象，清空超全局变量
-        $_GET = $_POST = $_REQUEST = $_FILES = $_SERVER = [];
-        PhalconDi()->getShared('request')->setRawBody(null)->setPutCache(null);
-        PhalconDi()->getShared('response')->setStatusCode(200)->setContent(null)->resetHeaders();
-
         return $response;
     }
 
     /**
-     * @param Response|\Symfony\Component\HttpFoundation\Response|\Phalcon\Http\Response $response
+     * @param Response|ResponseInterface $response
      */
-    public function handleResponse($response)
+    public function handleResponse(ResponseInterface $response)
     {
+        // 发送响应
         $response->send();
+
+        // 每次请求完之后，重置Request和Response对象，清空超全局变量
+        $_GET = $_POST = $_REQUEST = $_FILES = $_SERVER = [];
+        $this->getShared('request')->setRawBody(null)->setPutCache(null);
+        $this->getShared('response')->setContent(null)->resetHeaders();
     }
 
     /**
@@ -194,9 +151,6 @@ class Application extends Container
      */
     public function handleException($e)
     {
-        // Save to container
-        $this->add('exception', $e);
-
         // Log
         $logContext = [
             'error' => $e->getMessage(),
@@ -205,7 +159,7 @@ class Application extends Container
             'line'  => $e->getLine(),
             'trace' => $e->getTraceAsString(),
         ];
-        logger("framework")->error("{error} ({errno}) in {file}:{line}\nStack trace:\n{trace}", $logContext);
+        $this->getLogger("framework")->error("{error} ({errno}) in {file}:{line}\nStack trace:\n{trace}", $logContext);
 
         // Response
         if ($e instanceof \Error) {
@@ -213,38 +167,18 @@ class Application extends Container
         } else {
             $statusCode = 200;
         }
-        return json(call_user_func(config()->get('exception.response'), $e), $statusCode);
+
+        return json(call_user_func(app()->getConfig()->path('exception.response'), $e), $statusCode);
     }
 
     /**
-     * Started application.
-     *
-     * @return int
-     */
-    public function run()
-    {
-        $request = ServerRequest::createServerRequestFromGlobals();
-
-        $response = $this->handleRequest($request);
-
-        $this->handleResponse($response);
-
-        return $this->shutdown($request, $response);
-    }
-
-    /**
-     * @param ServerRequestInterface                                       $request
-     * @param ResponseInterface|\Symfony\Component\HttpFoundation\Response $response
+     * @param ServerRequestInterface     $request
+     * @param ResponseInterface|Response $response
      *
      * @return int
      */
     public function shutdown(ServerRequestInterface $request, $response)
     {
-        $this->offsetUnset('request');
-        $this->offsetUnset('response');
-        if ($this->offsetExists('exception')) {
-            $this->offsetUnset('exception');
-        }
         unset($request, $response);
 
         return 0;
@@ -258,7 +192,7 @@ class Application extends Container
     public function wrapRequest(ServerRequestInterface $request)
     {
         // 设置原始POST的BODY数据
-        PhalconDi()->getShared('request')->setRawBody((string) $request->getBody());
+        $this->getShared('request')->setRawBody((string) $request->getBody());
 
         // 设置超全局变量 GET POST COOKIE SERVER REQUEST
         $_GET = $request->getQueryParams();

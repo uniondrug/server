@@ -25,27 +25,27 @@ trait OnWorkerStart
         parent::onWorkerStart($server, $worker_id);
 
         // 挂起定时器，让数据库保持连接
-        $interval = config()->get('database.interval', 0);
+        $interval = app()->getConfig()->path('database.interval', 0);
         if ($interval) {
             $server->tick($interval * 1000, function ($id, $params = []) {
                 $pid = getmypid();
                 foreach (['db', 'dbSlave'] as $dbServiceName) {
-                    if (PhalconDi()->has($dbServiceName)) {
+                    if (app()->has($dbServiceName)) {
                         $tryTimes = 0;
-                        $maxRetry = config()->get('database.max_retry', 3);
+                        $maxRetry = app()->getConfig()->path('database.max_retry', 3);
                         while ($tryTimes < $maxRetry) {
                             try {
-                                @PhalconDi()->getShared($dbServiceName)->query("select 1");
+                                @app()->getShared($dbServiceName)->query("select 1");
                             } catch (\Exception $e) {
-                                logger('database')->alert("[$pid] [$dbServiceName] connection lost ({$e->getMessage()})");
+                                app()->getLogger('database')->alert("[$pid] [$dbServiceName] connection lost ({$e->getMessage()})");
                                 if (preg_match("/(errno=32 Broken pipe)|(MySQL server has gone away)/i", $e->getMessage())) {
                                     $tryTimes++;
-                                    @PhalconDi()->getShared($dbServiceName)->close();
-                                    @PhalconDi()->getShared($dbServiceName)->connect();
-                                    logger('database')->alert("[$pid] [$dbServiceName] try to reconnect[$tryTimes]");
+                                    @app()->getShared($dbServiceName)->close();
+                                    @app()->getShared($dbServiceName)->connect();
+                                    app()->getLogger('database')->alert("[$pid] [$dbServiceName] try to reconnect[$tryTimes]");
                                     continue;
                                 } else {
-                                    logger('database')->error("[$pid] [$dbServiceName] try to reconnect failed");
+                                    app()->getLogger('database')->error("[$pid] [$dbServiceName] try to reconnect failed");
                                     process_kill($pid);
                                 }
                             }
