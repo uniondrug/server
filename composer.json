@@ -17,7 +17,7 @@
   },
   "autoload": {
     "psr-4": {
-      "UniondrugServer\\": "src"
+      "UniondrugServer\\": "src/"
     },
     "files": [
       "helpers.php"
