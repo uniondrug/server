@@ -10,18 +10,36 @@ use Phalcon\Http\Request\Exception;
 
 class Request extends \Phalcon\Http\Request
 {
+    /**
+     * Set request raw body
+     *
+     * @param null $body
+     *
+     * @return $this
+     */
     public function setRawBody($body = null)
     {
         $this->_rawBody = $body;
         return $this;
     }
 
+    /**
+     * Set in memory Put cache
+     *
+     * @param null $data
+     *
+     * @return $this
+     */
     public function setPutCache($data = null)
     {
         $this->_putCache = $data;
         return $this;
     }
 
+    /**
+     * Replace method for getMethod() which cause memory leak with swoole.
+     * @return string
+     */
     public function getMethodReplacement()
     {
         $returnMethod = "";
@@ -50,6 +68,9 @@ class Request extends \Phalcon\Http\Request
         return $returnMethod;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function isMethod($methods, $strict = null)
     {
         $httpMethod = $this->getMethodReplacement();
@@ -76,5 +97,85 @@ class Request extends \Phalcon\Http\Request
         }
 
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isPost()
+    {
+        return $this->getMethodReplacement() === 'POST';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isGet()
+    {
+        return $this->getMethodReplacement() === 'GET';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isPut()
+    {
+        return $this->getMethodReplacement() === 'PUT';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isHead()
+    {
+        return $this->getMethodReplacement() === 'HEAD';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isPatch()
+    {
+        return $this->getMethodReplacement() === 'PATCH';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isDelete()
+    {
+        return $this->getMethodReplacement() === 'DELETE';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isOptions()
+    {
+        return $this->getMethodReplacement() === 'OPTIONS';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isPurge()
+    {
+        return $this->getMethodReplacement() === 'PURGE';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isTrace()
+    {
+        return $this->getMethodReplacement() === 'TRACE';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isConnect()
+    {
+        return $this->getMethodReplacement() === 'CONNECT';
     }
 }
