@@ -123,17 +123,17 @@ class Application extends Container
 
             // PhalconApplication::handle() return a Response|false, or throw Exception
             $response = $this->wrapResponse($this->get('PhalconApplication')->handle());
-            print_r($response);
 
         } catch (\Throwable $exception) {
             $response = $this->wrapResponse($this->handleException($exception));
-            print_r($response);
         }
 
         return $response;
     }
 
     /**
+     * 清理超全局变量和容器内的对象
+     *
      * @param ServerRequestInterface     $request
      * @param ResponseInterface|Response $response
      *
@@ -152,6 +152,8 @@ class Application extends Container
     }
 
     /**
+     * 将swoole的psr规范的request，置换到全局变量，供Phalcon使用
+     *
      * @param ServerRequestInterface $request
      *
      * @return void
@@ -196,6 +198,8 @@ class Application extends Container
     }
 
     /**
+     * 将Phalcon的Response对象，转化成FastD的Response对象
+     *
      * @param bool|\Phalcon\Http\Response $response
      *
      * @return \FastD\Http\Response
@@ -215,6 +219,6 @@ class Application extends Container
             return $wrappedResponse;
         }
 
-        throw new \RuntimeException("Internal Error");
+        throw new \RuntimeException("Internal Error", -1);
     }
 }
