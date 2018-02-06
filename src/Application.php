@@ -123,52 +123,14 @@ class Application extends Container
 
             // PhalconApplication::handle() return a Response|false, or throw Exception
             $response = $this->wrapResponse($this->get('PhalconApplication')->handle());
+            print_r($response);
+
         } catch (\Throwable $exception) {
-            $response = $this->handleException($exception);
+            $response = $this->wrapResponse($this->handleException($exception));
+            print_r($response);
         }
 
         return $response;
-    }
-
-    /**
-     * @param Response|ResponseInterface $response
-     */
-    public function handleResponse(ResponseInterface $response)
-    {
-        // 发送响应
-        $response->send();
-
-        // 每次请求完之后，重置Request和Response对象，清空超全局变量
-        $_GET = $_POST = $_REQUEST = $_FILES = $_SERVER = [];
-        $this->getShared('request')->setRawBody(null)->setPutCache(null);
-        $this->getShared('response')->setContent(null)->resetHeaders();
-    }
-
-    /**
-     * @param \Exception|\Throwable|\Error $e
-     *
-     * @return Response
-     */
-    public function handleException($e)
-    {
-        // Log
-        $logContext = [
-            'error' => $e->getMessage(),
-            'errno' => $e->getCode(),
-            'file'  => $e->getFile(),
-            'line'  => $e->getLine(),
-            'trace' => $e->getTraceAsString(),
-        ];
-        $this->getLogger("framework")->error("{error} ({errno}) in {file}:{line}\nStack trace:\n{trace}", $logContext);
-
-        // Response
-        if ($e instanceof \Error) {
-            $statusCode = 500;
-        } else {
-            $statusCode = 200;
-        }
-
-        return json(call_user_func(app()->getConfig()->path('exception.response'), $e), $statusCode);
     }
 
     /**
@@ -180,6 +142,11 @@ class Application extends Container
     public function shutdown(ServerRequestInterface $request, $response)
     {
         unset($request, $response);
+
+        // 每次请求完之后，重置Request和Response对象，清空超全局变量
+        $_GET = $_POST = $_REQUEST = $_FILES = $_SERVER = [];
+        $this->getShared('request')->setRawBody(null)->setPutCache(null);
+        $this->getShared('response')->setContent(null)->resetHeaders();
 
         return 0;
     }
@@ -237,7 +204,7 @@ class Application extends Container
     {
         if ($response instanceof \Phalcon\Http\Response) {
             $statusCode = (int) $response->getStatusCode();
-            $wrappedResponse = new Response($response->getContent(), $statusCode ?: 200, $response->getHeaders()->toArray());
+            $wrappedResponse = new Response($response->getContent(), $statusCode ?: 200, array_filter($response->getHeaders()->toArray()));
             if ($response->getCookies()) {
                 foreach ($response->getCookies() as $cookie) {
                     $wrappedResponse->withCookie($cookie->getName(), $cookie->getValue(),
