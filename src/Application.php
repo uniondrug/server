@@ -82,8 +82,10 @@ class Application extends Container
             {
                 $phalconApplication = new \Pails\Application($this);
                 // Phalcon Version > 3.3.0
-                //$phalconApplication->sendHeadersOnHandleRequest(false);
-                //$phalconApplication->sendCookiesOnHandleRequest(false);
+                if (version_compare(\Phalcon\Version::get(), '3.3.0', '>=')) {
+                    $phalconApplication->sendHeadersOnHandleRequest(false);
+                    $phalconApplication->sendCookiesOnHandleRequest(false);
+                }
                 $phalconApplication->boot();
                 $this->setShared('PhalconApplication', $phalconApplication);
             }
