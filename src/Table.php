@@ -38,6 +38,18 @@ class Table extends \Swoole\Table
     }
 
     /**
+     * 清空所有数据
+     */
+    public function clear()
+    {
+        while ($this->count() > 0) {
+            foreach ($this as $key => $val) {
+                $this->del($key);
+            }
+        }
+    }
+
+    /**
      * @param $key
      * @param $column
      *
