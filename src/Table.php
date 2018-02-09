@@ -38,6 +38,14 @@ class Table extends \Swoole\Table
     }
 
     /**
+     * @return array
+     */
+    public function getColumns()
+    {
+        return $this->columns;
+    }
+
+    /**
      * 清空所有数据
      */
     public function clear()
