@@ -29,14 +29,3 @@ function swoole()
 {
     return server()->getSwoole();
 }
-
-/**
- * @param array $content
- * @param int   $statusCode
- *
- * @return Response
- */
-function json(array $content = [], $statusCode = Response::HTTP_OK)
-{
-    return new JsonResponse($content, $statusCode);
-}

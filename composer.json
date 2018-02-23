@@ -10,10 +10,8 @@
     }
   ],
   "require": {
-    "php": ">=7.1",
-    "ext-phalcon": "^3.2",
-    "fastd/swoole": "^2.2",
-    "uniondrug/framework": "^1.10"
+    "uniondrug/framework": "^2.0",
+    "fastd/swoole": "^2.2"
   },
   "autoload": {
     "psr-4": {

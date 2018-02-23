@@ -14,9 +14,9 @@ namespace UniondrugServer;
 use ErrorException;
 use FastD\Http\Response;
 use Pails\Container;
+use Phalcon\Mvc\Router;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use UniondrugServer\Wrapper\Request;
 
 /**
  * Class Application.
@@ -75,8 +75,8 @@ class Application extends Container
     public function bootstrap()
     {
         if (!$this->booted) {
-            // 使用改写的PhalconRequest，原生的有内存泄漏
-            $this->setShared('request', Request::class);
+            // 使用REQUEST_URL来路由
+            $this->getShared('router')->setUriSource(Router::URI_SOURCE_SERVER_REQUEST_URI);
 
             // 初始化Phalcon应用
             {
@@ -120,12 +120,17 @@ class Application extends Container
     public function handleRequest(ServerRequestInterface $request)
     {
         try {
+            // 将PSR规范的HTTP请求放入容器，为了兼容处理
+            $this->setShared('PsrRequest', $request);
+
             // 转换数据给Phalcon
             $this->wrapRequest($request);
 
             // PhalconApplication::handle() return a Response|false, or throw Exception
             $response = $this->wrapResponse($this->get('PhalconApplication')->handle());
 
+            // 将响应放入容器
+            $this->setShared('PsrResponse', $response);
         } catch (\Throwable $exception) {
             $response = $this->wrapResponse($this->handleException($exception));
         }
@@ -143,7 +148,12 @@ class Application extends Container
      */
     public function shutdown(ServerRequestInterface $request, $response)
     {
+        // 销毁对象变量
         unset($request, $response);
+
+        // 从容器中销毁相关对象
+        $this->remove('PsrRequest');
+        $this->remove('PsrResponse');
 
         // 每次请求完之后，重置Request和Response对象，清空超全局变量
         $_GET = $_POST = $_REQUEST = $_FILES = $_SERVER = [];
@@ -154,7 +164,10 @@ class Application extends Container
     }
 
     /**
-     * 将swoole的psr规范的request，置换到全局变量，供Phalcon使用
+     * 将swoole的psr规范的request，置换到全局变量，供Phalcon使用。
+     *
+     * NOTE：Phalcon的Request对象是一个只读的对象，数据都是从PHP原始的方式（$_GET/$_POST/$_REQUEST）中获取。
+     * 而PSR的Request对象是一个读写对象，请求里面的内容在对象中维护。
      *
      * @param ServerRequestInterface $request
      *
@@ -179,9 +192,6 @@ class Application extends Container
                 $_SERVER[$serverKey] = $request->getHeaderLine($key); // getHeaderLine return a string.
             }
         }
-
-        // 为PHALCON设置rewrite路径
-        $_GET['_url'] = $_SERVER['REQUEST_URI'];
 
         // 上传的文件处理
         if (count($files = $request->getUploadedFiles())) {

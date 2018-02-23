@@ -5,23 +5,11 @@
  */
 return [
     'default' => [
-        'response' => function (Exception $e) {
+        'response' => function (\Throwable $e) {
             return [
                 'error'    => $e->getMessage(),
-                'errno'    => $e->getCode() ?: '-1',
+                'errno'    => (string) $e->getCode() ?: '-1',
                 'dataType' => 'ERROR',
-                'file'     => $e->getFile(),
-                'line'     => $e->getLine(),
-                'trace'    => explode("\n", $e->getTraceAsString()),
-            ];
-        },
-        'log'      => function (Exception $e) {
-            return [
-                'error' => $e->getMessage(),
-                'errno'  => $e->getCode(),
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
             ];
         },
     ],
