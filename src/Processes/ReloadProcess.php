@@ -31,6 +31,9 @@ class ReloadProcess extends Process
     {
         while (true) {
             sleep($this->interval);
+            if (!app()->getConfig()->path('server.autoreload', false)) {
+                continue;
+            }
             $md5File = $this->md5File();
             if (strcmp($this->lastMD5, $md5File) !== 0) {
                 $this->log("File changed, start reloading ...");

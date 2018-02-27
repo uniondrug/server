@@ -51,7 +51,8 @@ return [
             'task_worker_num' => 1,
         ],
         'processes' => [
-
+            // 开发环境，自动监控文件改动，改动后自动Reload服务
+            \Uniondrug\Server\Processes\ReloadProcess::class,
         ],
         'listeners' => [
             [
