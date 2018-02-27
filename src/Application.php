@@ -9,11 +9,11 @@
  * @see       https://github.com/uniondrug/server
  */
 
-namespace UniondrugServer;
+namespace Uniondrug\Server;
 
 use ErrorException;
 use FastD\Http\Response;
-use Pails\Container;
+use Uniondrug\Framework\Container;
 use Phalcon\Mvc\Router;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -80,7 +80,7 @@ class Application extends Container
 
             // 初始化Phalcon应用
             {
-                $phalconApplication = new \Pails\Application($this);
+                $phalconApplication = new \Uniondrug\Framework\Application($this);
                 // Phalcon Version > 3.3.0
                 if (version_compare(\Phalcon\Version::get(), '3.3.0', '>=')) {
                     $phalconApplication->sendHeadersOnHandleRequest(false);

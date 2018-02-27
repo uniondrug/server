@@ -3,7 +3,7 @@
  * Table.php
  *
  */
-namespace UniondrugServer;
+namespace Uniondrug\Server;
 
 class Table extends \Swoole\Table
 {

@@ -4,7 +4,7 @@
  *
  */
 
-namespace UniondrugServer;
+namespace Uniondrug\Server;
 
 use swoole_process;
 use FastD\Swoole\Process as SwooleProcess;

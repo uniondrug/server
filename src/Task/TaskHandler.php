@@ -3,7 +3,7 @@
  * TaskHandler.php
  *
  */
-namespace UniondrugServer\Task;
+namespace Uniondrug\Server\Task;
 
 use Phalcon\Di\Injectable;
 

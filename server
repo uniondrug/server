@@ -39,8 +39,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use UniondrugServer\Application;
-use UniondrugServer\Server;
+use Uniondrug\Server\Application;
+use Uniondrug\Server\Server;
 
 $logo = <<<LOGO
    __  __      _             ____                  
@@ -61,7 +61,7 @@ try {
         new InputOption('help', 'h', InputOption::VALUE_OPTIONAL, 'Show help', null),
     ]));
 
-    $output->writeln(sprintf("%s <info>%s</info>", $logo, "1.0.0"));
+    $output->writeln(sprintf("%s <info>%s</info>", $logo, "2.0.0"));
 
     if ($input->hasParameterOption(['--help', '-h'])) {
         $output->writeln("<comment>Usage:</comment>");

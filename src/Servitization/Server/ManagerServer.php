@@ -7,11 +7,11 @@
  * @see       https://fastdlabs.com
  */
 
-namespace UniondrugServer\Servitization\Server;
+namespace Uniondrug\Server\Servitization\Server;
 
 use FastD\Swoole\Server\TCP;
 use swoole_server;
-use UniondrugServer\Application;
+use Uniondrug\Server\Application;
 
 /**
  * Class MonitorStatusServer.

@@ -7,7 +7,7 @@
  * @see       https://fastdlabs.com
  */
 
-namespace UniondrugServer\Servitization\Server;
+namespace Uniondrug\Server\Servitization\Server;
 
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
@@ -16,8 +16,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use swoole_http_request;
 use swoole_http_response;
 use swoole_server;
-use UniondrugServer\Servitization\OnWorkerStart;
-use UniondrugServer\Task;
+use Uniondrug\Server\Servitization\OnWorkerStart;
+use Uniondrug\Server\Task;
 
 /**
  * Class HTTPServer.
