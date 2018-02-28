@@ -50,15 +50,19 @@ return [
             'worker_num'      => 1,
             'task_worker_num' => 1,
         ],
-        'processes' => [
-            // 开发环境，自动监控文件改动，改动后自动Reload服务
-            \Uniondrug\Server\Processes\ReloadProcess::class,
-        ],
+        'processes' => [],
         'listeners' => [
             [
                 'class' => \Uniondrug\Server\Servitization\Server\ManagerServer::class,
                 'host'  => 'tcp://0.0.0.0:9530',
             ],
+        ],
+    ],
+    'development' => [
+        'autoreload' => true,
+        'processes' => [
+                // 开发环境，自动监控文件改动，改动后自动Reload服务
+                \Uniondrug\Server\Processes\ReloadProcess::class,
         ],
     ],
     'production' => [
