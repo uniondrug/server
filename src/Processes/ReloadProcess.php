@@ -8,6 +8,7 @@ namespace Uniondrug\Server\Processes;
 
 use Phalcon\Text;
 use swoole_process;
+use Uniondrug\Server\Console;
 use Uniondrug\Server\Process;
 
 class ReloadProcess extends Process
@@ -21,6 +22,8 @@ class ReloadProcess extends Process
         parent::handle($swoole_process);
 
         process_rename(app()->getName() . ' [ReloadProcess]');
+
+        $this->log('[ReloadProcess] process started.');
 
         $this->lastMD5 = $this->md5File();
 
@@ -36,9 +39,9 @@ class ReloadProcess extends Process
             }
             $md5File = $this->md5File();
             if (strcmp($this->lastMD5, $md5File) !== 0) {
-                $this->log("File changed, start reloading ...");
+                $this->log("[ReloadProcess] File changed, start reloading ...");
                 server()->reload();
-                $this->log("Reloaded");
+                $this->log("[ReloadProcess] Reloaded");
             }
             $this->lastMD5 = $md5File;
         }
@@ -58,9 +61,6 @@ class ReloadProcess extends Process
 
     public function log($msg)
     {
-        $time = date("Y-m-d H:i:s");
-        $pid = getmypid();
-
-        echo sprintf("[%s] [\e[0;32m%9s\e[0m] [%05d] %s", $time, 'NOTICE', $pid, $msg) . PHP_EOL;
+        app()->getShared(Console::class)->info($msg);
     }
 }
