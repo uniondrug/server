@@ -7,7 +7,6 @@
 ```
 $ composer requre uniondrug/server
 $ cp vendor/uniondrug/server/server.php.example config/server.php
-$ cp vendor/uniondrug/server/exception.php.example config/exception.php 
 ```
 
 ## 使用
@@ -69,35 +68,6 @@ return [
         'options' => [
             'worker_num' => 5,
         ],
-    ],
-];
-```
-
-`exception.php`中配置的是异常日志和输出格式：
-
-```php
-return [
-    'default' => [
-        'response' => function (Exception $e) {
-            return [
-                'error'    => $e->getMessage(),
-                'errno'    => '-1',
-                'dataType' => 'ERROR',
-                'code'     => $e->getCode(),
-                'file'     => $e->getFile(),
-                'line'     => $e->getLine(),
-                'trace'    => explode("\n", $e->getTraceAsString()),
-            ];
-        },
-        'log'      => function (Exception $e) {
-            return [
-                'msg'   => $e->getMessage(),
-                'code'  => $e->getCode(),
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
-                'trace' => explode("\n", $e->getTraceAsString()),
-            ];
-        },
     ],
 ];
 ```
