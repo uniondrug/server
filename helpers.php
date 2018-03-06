@@ -1,8 +1,6 @@
 <?php
 
-use FastD\Http\JsonResponse;
-use FastD\Http\Response;
-use UniondrugServer\Application;
+use Uniondrug\Server\Application;
 
 /**
  * 服务应用

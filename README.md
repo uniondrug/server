@@ -7,7 +7,6 @@
 ```
 $ composer requre uniondrug/server
 $ cp vendor/uniondrug/server/server.php.example config/server.php
-$ cp vendor/uniondrug/server/exception.php.example config/exception.php 
 ```
 
 ## 使用
@@ -25,7 +24,7 @@ Usage:
 
 Options:
   -d, --daemon   Run server as daemon, Do not ask any interactive question
-  -t, --path     Web root relative path. Default: /Users/nishurong/PhpstormProjects/php-workspace/uniondrug/cn.uniondrug.dingding
+  -t, --path     Web root relative path. Default: /path/to/current/workspace
   -e, --env      Environment. Default: development
   -h, --help     Show this help
 
@@ -44,55 +43,31 @@ Available commands:
 return [
     'default'    => [
         'host'      => 'http://0.0.0.0:9527',
-        'class'     => \UniondrugServer\Servitization\Server\HTTPServer::class,
+        'class'     => \Uniondrug\Server\Servitization\Server\HTTPServer::class,
         'options'   => [
             'pid_file'        => __DIR__ . '/../tmp/pid/server.pid',
             'worker_num'      => 1,
             'task_worker_num' => 1,
         ],
-        'processes' => [
-
-        ],
+        'processes' => [],
         'listeners' => [
             [
-                'class' => \UniondrugServer\Servitization\Server\ManagerServer::class,
+                'class' => \Uniondrug\Server\Servitization\Server\ManagerServer::class,
                 'host'  => 'tcp://0.0.0.0:9530',
             ],
+        ],
+    ],
+    'development' => [
+        'autoreload' => true,
+        'processes' => [
+                // 开发环境，自动监控文件改动，改动后自动Reload服务
+                \Uniondrug\Server\Processes\ReloadProcess::class,
         ],
     ],
     'production' => [
         'options' => [
             'worker_num' => 5,
         ],
-    ],
-];
-```
-
-`exception.php`中配置的是异常日志和输出格式：
-
-```php
-return [
-    'default' => [
-        'response' => function (Exception $e) {
-            return [
-                'error'    => $e->getMessage(),
-                'errno'    => '-1',
-                'dataType' => 'ERROR',
-                'code'     => $e->getCode(),
-                'file'     => $e->getFile(),
-                'line'     => $e->getLine(),
-                'trace'    => explode("\n", $e->getTraceAsString()),
-            ];
-        },
-        'log'      => function (Exception $e) {
-            return [
-                'msg'   => $e->getMessage(),
-                'code'  => $e->getCode(),
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
-                'trace' => explode("\n", $e->getTraceAsString()),
-            ];
-        },
     ],
 ];
 ```

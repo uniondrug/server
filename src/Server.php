@@ -7,11 +7,11 @@
  * @see       https://fastdlabs.com
  */
 
-namespace UniondrugServer;
+namespace Uniondrug\Server;
 
 use swoole_server;
 use Symfony\Component\Console\Input\InputInterface;
-use UniondrugServer\Servitization\Server\HTTPServer;
+use Uniondrug\Server\Servitization\Server\HTTPServer;
 
 /**
  * Class App.

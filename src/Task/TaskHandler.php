@@ -3,15 +3,13 @@
  * TaskHandler.php
  *
  */
-namespace UniondrugServer\Task;
-
-use Phalcon\Di\Injectable;
+namespace Uniondrug\Server\Task;
 
 /**
  * Class TaskHandler
  *
  */
-abstract class TaskHandler extends Injectable
+abstract class TaskHandler extends \Uniondrug\Framework\Injectable
 {
     /**
      * @param string $data Task data

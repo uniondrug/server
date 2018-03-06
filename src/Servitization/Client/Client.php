@@ -7,7 +7,7 @@
  * @see       http://www.fast-d.cn/
  */
 
-namespace UniondrugServer\Servitization\Client;
+namespace Uniondrug\Server\Servitization\Client;
 
 use FastD\Http\Response;
 

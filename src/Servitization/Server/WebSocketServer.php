@@ -7,14 +7,14 @@
  * @see       https://fastdlabs.com
  */
 
-namespace UniondrugServer\Servitization\Server;
+namespace Uniondrug\Server\Servitization\Server;
 
 use FastD\Http\ServerRequest;
 use FastD\Packet\Json;
 use FastD\Swoole\Server\WebSocket;
 use swoole_server;
 use swoole_websocket_frame;
-use UniondrugServer\Servitization\OnWorkerStart;
+use Uniondrug\Server\Servitization\OnWorkerStart;
 
 /**
  * Class WebSocketServer.

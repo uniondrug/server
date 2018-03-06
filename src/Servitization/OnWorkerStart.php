@@ -7,7 +7,7 @@
  * @see       https://fastdlabs.com
  */
 
-namespace UniondrugServer\Servitization;
+namespace Uniondrug\Server\Servitization;
 
 use swoole_server;
 

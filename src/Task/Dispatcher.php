@@ -4,10 +4,10 @@
  *
  */
 
-namespace UniondrugServer\Task;
+namespace Uniondrug\Server\Task;
 
 use Phalcon\Di\Injectable;
-use UniondrugServer\Task;
+use Uniondrug\Server\Task;
 
 /**
  * Class Dispatcher

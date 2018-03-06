@@ -4,10 +4,10 @@
  *
  */
 
-namespace UniondrugServer;
+namespace Uniondrug\Server;
 
-use Phalcon\Di\Injectable;
-use UniondrugServer\Task\TaskHandler;
+use Uniondrug\Framework\Injectable;
+use Uniondrug\Server\Task\TaskHandler;
 
 /**
  * Class Task

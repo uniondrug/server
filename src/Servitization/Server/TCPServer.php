@@ -7,13 +7,13 @@
  * @see       https://fastdlabs.com
  */
 
-namespace UniondrugServer\Servitization\Server;
+namespace Uniondrug\Server\Servitization\Server;
 
 use FastD\Http\ServerRequest;
 use FastD\Packet\Json;
 use FastD\Swoole\Server\TCP;
 use swoole_server;
-use UniondrugServer\Servitization\OnWorkerStart;
+use Uniondrug\Server\Servitization\OnWorkerStart;
 
 /**
  * Class TCPServer.
