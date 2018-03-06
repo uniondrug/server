@@ -17,6 +17,7 @@ use Uniondrug\Framework\Container;
 use Phalcon\Mvc\Router;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Uniondrug\Server\Task\Dispatcher;
 
 /**
  * Class Application.
@@ -88,6 +89,9 @@ class Application extends Container
                 }
                 $phalconApplication->boot();
                 $this->setShared('PhalconApplication', $phalconApplication);
+                $this->setShared('taskDispatcher', function () {
+                    return new Dispatcher();
+                });
             }
 
             date_default_timezone_set($this->getConfig()->get('app.timezone', 'PRC'));

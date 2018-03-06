@@ -5,13 +5,11 @@
  */
 namespace Uniondrug\Server\Task;
 
-use Phalcon\Di\Injectable;
-
 /**
  * Class TaskHandler
  *
  */
-abstract class TaskHandler extends Injectable
+abstract class TaskHandler extends \Uniondrug\Framework\Injectable
 {
     /**
      * @param string $data Task data
