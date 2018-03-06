@@ -6,7 +6,7 @@
 
 namespace Uniondrug\Server;
 
-use Phalcon\Di\Injectable;
+use Uniondrug\Framework\Injectable;
 use Uniondrug\Server\Task\TaskHandler;
 
 /**
