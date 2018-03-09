@@ -5,9 +5,9 @@
 
 namespace Uniondrug\Server;
 
-use Phalcon\Di\Injectable;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
+use Uniondrug\Framework\Injectable;
 
 /**
  * Class Console
@@ -21,7 +21,7 @@ class Console extends Injectable
      */
     private function getConsoleOutput()
     {
-        return $this->getDI()->getShared(ConsoleOutput::class);
+        return app()->getShared(ConsoleOutput::class);
     }
 
     /**
