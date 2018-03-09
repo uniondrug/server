@@ -11,6 +11,9 @@ use FastD\Swoole\Process as SwooleProcess;
 
 class Process extends SwooleProcess
 {
+    /**
+     * @var array
+     */
     protected $options = [];
 
     /**

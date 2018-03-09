@@ -6,14 +6,11 @@
 
 namespace Uniondrug\Server\Task;
 
-use Phalcon\Di\Injectable;
-use Uniondrug\Server\Task;
-
 /**
  * Class Dispatcher
  *
  */
-class Dispatcher extends Injectable
+class Dispatcher
 {
     /**
      * Send a task.
@@ -21,15 +18,19 @@ class Dispatcher extends Injectable
      * @param string $handler Handler class name
      * @param mixed  $data    Raw data
      */
-    public function dispatch($handler, $data)
+    public function dispatch($handler, $data = [])
     {
-        $task = new Task($handler, $data);
+        if (!is_a($handler, TaskHandler::class, true)) {
+            app()->getLogger("framework")->error("Dispatch task failed. Handler: $handler is not a TaskHandler");
+            throw new \RuntimeException("Dispatch task failed. Handler: $handler is not a TaskHandler");
+        }
+        $task = json_encode(['handler' => $handler, 'data' => $data]);
         $taskId = swoole()->task($task);
         $workerId = swoole()->worker_id;
         if (false === $taskId) {
-            $this->getDI()->getLogger("framework")->error("[Worker $workerId] Dispatch task failed. Handler: $handler");
+            app()->getLogger("framework")->error("[Worker $workerId] Dispatch task failed. Handler: $handler");
         } else {
-            $this->getDI()->getLogger("framework")->debug("[Worker $workerId] task $taskId send, handle: $handler");
+            app()->getLogger("framework")->debug("[Worker $workerId] task $taskId send, handle: $handler");
         }
     }
 }

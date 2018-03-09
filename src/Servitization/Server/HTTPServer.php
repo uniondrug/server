@@ -68,15 +68,16 @@ class HTTPServer extends HTTP
     /**
      * @inheritdoc
      */
-    public function doTask(swoole_server $server, $task, $taskId, $workerId)
+    public function doTask(swoole_server $server, $data, $taskId, $workerId)
     {
         $TaskWorkerId = $server->worker_id;
 
         app()->getLogger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . serialize($task));
 
-        if (is_object($task) && $task instanceof Task) {
+        $task = json_decode($data);
+        if ($task && isset($task->handler) && is_a($task->handler, Task\TaskHandler::class, true)) {
             try {
-                return $task->handle();
+                return app()->getShared($task->handler)->handle($task->data);
             } catch (\Exception $e) {
                 app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Handle task failed. Error: " . $e->getMessage());
 

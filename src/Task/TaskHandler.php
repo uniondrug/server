@@ -12,9 +12,9 @@ namespace Uniondrug\Server\Task;
 abstract class TaskHandler extends \Uniondrug\Framework\Injectable
 {
     /**
-     * @param string $data Task data
+     * @param mixed $data Task data
      *
      * @return mixed
      */
-     abstract public function handle($data);
+     abstract public function handle($data = []);
 }
