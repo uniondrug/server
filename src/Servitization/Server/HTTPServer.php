@@ -18,6 +18,7 @@ use swoole_http_response;
 use swoole_server;
 use Uniondrug\Server\Servitization\OnWorkerStart;
 use Uniondrug\Server\Task;
+use Uniondrug\Server\Utils\Request;
 
 /**
  * Class HTTPServer.
@@ -34,23 +35,47 @@ class HTTPServer extends HTTP
      */
     public function onRequest(swoole_http_request $swooleRequet, swoole_http_response $swooleResponse)
     {
-        $request = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
+        // Request工具
+        $requestUtil = new Request($swooleRequet);
 
+        // Log Elements
+        $timeStart = $requestUtil->getRequestTime();
+        $remoteAddr = $requestUtil->getClientAddress() ?: '-';
+        $remoteUser = $requestUtil->getBasicAuthUser() ?: '-';
+        $httpHost = $requestUtil->getHttpHost() ?: '-';
+        $userAgent = $requestUtil->getUserAgent() ?: '-';
+        $userReferer = $requestUtil->getHTTPReferer() ?: '-';
+        $userRequest = $requestUtil->getUserRequest();
+
+        // Do Request
+        $request = SwooleServerRequest::createServerRequestFromSwoole($swooleRequet);
         $response = $this->doRequest($request);
+
+        // Log Elements
+        $bodySent = strlen((string) $response->getBody());
+        $statusCode = $response->getStatusCode();
 
         // Set Server header
         $response->withHeader('Server', app()->getConfig()->path('server.vendor', 'UDS'));
-
         foreach ($response->getHeaders() as $key => $header) {
             $swooleResponse->header($key, $response->getHeaderLine($key));
         }
         foreach ($response->getCookieParams() as $key => $cookieParam) {
             $swooleResponse->cookie($key, $cookieParam);
         }
-
         $swooleResponse->status($response->getStatusCode());
         $swooleResponse->end((string) $response->getBody());
+
+        // Cleanup
         app()->shutdown($request, $response);
+
+        // Log Elements
+        $timeDone = microtime(1);
+        $timeUsed = $timeDone - $timeStart;
+
+        // Access Log
+        app()->getLogger('access')->info(sprintf("%s %s \"%s\" %s %s \"%s\" \"%s\" %s %s",
+            $remoteAddr, $remoteUser, $userRequest, $statusCode, $bodySent, $userReferer, $userAgent, $httpHost, $timeUsed));
 
         return 0;
     }
@@ -72,7 +97,7 @@ class HTTPServer extends HTTP
     {
         $TaskWorkerId = $server->worker_id;
 
-        app()->getLogger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . serialize($task));
+        app()->getLogger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . $data);
 
         $task = json_decode($data);
         if ($task && isset($task->handler) && is_a($task->handler, Task\TaskHandler::class, true)) {
@@ -99,4 +124,5 @@ class HTTPServer extends HTTP
 
         app()->getLogger("framework")->debug("[Worker $workerId] task $taskId finished, with data: " . serialize($data));
     }
+
 }
