@@ -11,6 +11,7 @@ namespace Uniondrug\Server\Servitization\Server;
 
 use FastD\Http\Response;
 use FastD\Http\SwooleServerRequest;
+use FastD\Packet\Json;
 use FastD\Swoole\Server\HTTP;
 use Psr\Http\Message\ServerRequestInterface;
 use swoole_http_request;
@@ -66,9 +67,6 @@ class HTTPServer extends HTTP
         $swooleResponse->status($response->getStatusCode());
         $swooleResponse->end((string) $response->getBody());
 
-        // Cleanup
-        app()->shutdown($request, $response);
-
         // Log Elements
         $timeDone = microtime(1);
         $timeUsed = $timeDone - $timeStart;
@@ -76,6 +74,10 @@ class HTTPServer extends HTTP
         // Access Log
         app()->getLogger('access')->info(sprintf("%s %s \"%s\" %s %s \"%s\" \"%s\" %s %s",
             $remoteAddr, $remoteUser, $userRequest, $statusCode, $bodySent, $userReferer, $userAgent, $httpHost, $timeUsed));
+
+        // Cleanup
+        unset($requestUtil);
+        app()->shutdown($request, $response);
 
         return 0;
     }
@@ -98,18 +100,17 @@ class HTTPServer extends HTTP
         $TaskWorkerId = $server->worker_id;
 
         app()->getLogger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . $data);
-
-        $task = json_decode($data);
-        if ($task && isset($task->handler) && is_a($task->handler, Task\TaskHandler::class, true)) {
-            try {
+        try {
+            $task = json_decode($data);
+            if ($task && isset($task->handler) && is_a($task->handler, Task\TaskHandler::class, true)) {
                 return app()->getShared($task->handler)->handle($task->data);
-            } catch (\Exception $e) {
-                app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Handle task failed. Error: " . $e->getMessage());
+            } else {
+                app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Data is not a valid Task object");
 
                 return false;
             }
-        } else {
-            app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Data is not a valid  Task object");
+        } catch (\Exception $e) {
+            app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Handle task failed. Error: " . $e->getMessage());
 
             return false;
         }

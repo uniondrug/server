@@ -6,6 +6,8 @@
 
 namespace Uniondrug\Server\Task;
 
+use FastD\Packet\Json;
+
 /**
  * Class Dispatcher
  *
@@ -17,6 +19,8 @@ class Dispatcher
      *
      * @param string $handler Handler class name
      * @param mixed  $data    Raw data
+     *
+     * @throws \FastD\Packet\Exceptions\PacketException
      */
     public function dispatch($handler, $data = [])
     {
@@ -24,7 +28,7 @@ class Dispatcher
             app()->getLogger("framework")->error("Dispatch task failed. Handler: $handler is not a TaskHandler");
             throw new \RuntimeException("Dispatch task failed. Handler: $handler is not a TaskHandler");
         }
-        $task = json_encode(['handler' => $handler, 'data' => $data]);
+        $task = Json::encode(['handler' => $handler, 'data' => $data]);
         $taskId = swoole()->task($task);
         $workerId = swoole()->worker_id;
         if (false === $taskId) {
