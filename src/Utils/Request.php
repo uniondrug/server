@@ -285,7 +285,7 @@ class Request
      */
     public function getUserAgent()
     {
-        return $this->request->header['user-agent'];
+        return $this->getHeader('user-agent');
     }
 
     /**
