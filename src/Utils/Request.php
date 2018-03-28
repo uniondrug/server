@@ -1,6 +1,6 @@
 <?php
 /**
- * Request.php
+ * Swoole http server 的Request信息封装工具
  *
  */
 

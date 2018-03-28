@@ -12,11 +12,11 @@
 namespace Uniondrug\Server;
 
 use ErrorException;
-use FastD\Http\Response;
-use Uniondrug\Framework\Container;
 use Phalcon\Mvc\Router;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Uniondrug\Framework\Container;
+use Uniondrug\Http\Response;
 use Uniondrug\Server\Task\Dispatcher;
 
 /**
@@ -95,7 +95,7 @@ class Application extends Container
             }
 
             date_default_timezone_set($this->getConfig()->get('app.timezone', 'PRC'));
-            $this->name = $this->getConfig()->path('app.appName', 'UnionDrug-Server');
+            $this->name = $this->getConfig()->path('app.appName', 'UnionDrugServer');
 
             $this->registerExceptionHandler();
             $this->booted = true;
@@ -119,7 +119,7 @@ class Application extends Container
     /**
      * @param ServerRequestInterface $request
      *
-     * @return ResponseInterface
+     * @return \Uniondrug\Http\Response
      */
     public function handleRequest(ServerRequestInterface $request)
     {
@@ -129,7 +129,7 @@ class Application extends Container
 
             // 转换数据给Phalcon
             $this->wrapRequest($request);
-
+            
             // PhalconApplication::handle() return a Response|false, or throw Exception
             $response = $this->wrapResponse($this->get('PhalconApplication')->handle());
 
@@ -201,7 +201,7 @@ class Application extends Container
         if (count($files = $request->getUploadedFiles())) {
             $_FILES = [];
             foreach ($files as $name => $file) {
-                /* @var \FastD\Http\UploadedFile $file */
+                /* @var \Uniondrug\Http\UploadedFile $file */
                 $_FILES[$name] = [
                     'name'     => $file->getPostFilename(),
                     'type'     => $file->getMimeType(),
@@ -218,7 +218,7 @@ class Application extends Container
      *
      * @param bool|\Phalcon\Http\Response $response
      *
-     * @return \FastD\Http\Response
+     * @return \Uniondrug\Http\Response
      */
     public function wrapResponse($response)
     {

@@ -16,7 +16,7 @@ if (!function_exists('app')) {
 
 if (!function_exists('server')) {
     /**
-     * @return \FastD\Swoole\Server
+     * @return \Uniondrug\Swoole\Server
      */
     function server()
     {
@@ -36,10 +36,10 @@ if (!function_exists('swoole')) {
 
 if (!function_exists('console')) {
     /**
-     * @return \Uniondrug\Server\Console
+     * @return \Uniondrug\Server\Utils\Console
      */
     function console()
     {
-        return app()->getShared(\Uniondrug\Server\Console::class);
+        return app()->getShared(\Uniondrug\Server\Utils\Console::class);
     }
 }

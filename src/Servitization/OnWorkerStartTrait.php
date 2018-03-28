@@ -14,7 +14,7 @@ use swoole_server;
 /**
  * Trait OnWorkerStart.
  */
-trait OnWorkerStart
+trait OnWorkerStartTrait
 {
     /**
      * @param swoole_server $server

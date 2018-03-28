@@ -24,7 +24,7 @@ class Server
     protected $application;
 
     /**
-     * @var \FastD\Swoole\Server
+     * @var \Uniondrug\Swoole\Server
      */
     protected $server;
 
@@ -41,7 +41,8 @@ class Server
         $this->server = $server::createServer(
             $application->getName(),
             $application->getConfig()->path('server.host'),
-            $application->getConfig()->path('server.options')->toArray()
+            $application->getConfig()->path('server.options')->toArray(),
+            console()
         );
         $application->setShared('server', $this->server);
 

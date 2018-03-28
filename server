@@ -62,7 +62,7 @@ try {
     ]));
 
     $output->writeln(sprintf("%s <info>%s</info>", $logo, "2.0.0"));
-
+    $output->writeln('');
     if ($input->hasParameterOption(['--help', '-h'])) {
         $output->writeln("<comment>Usage:</comment>");
         $output->writeln(" server [command] [option]");
