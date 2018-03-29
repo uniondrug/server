@@ -11,8 +11,8 @@ namespace Uniondrug\Server\Servitization\Server;
 
 use swoole_server;
 use swoole_websocket_frame;
-use Uniondrug\Http\ServerRequest;
 use Uniondrug\Packet\Json;
+use Uniondrug\Server\Servitization\CreateRequestTrait;
 use Uniondrug\Server\Servitization\OnTaskTrait;
 use Uniondrug\Server\Servitization\OnWorkerStartTrait;
 use Uniondrug\Swoole\Server\WebSocket;
@@ -26,6 +26,8 @@ class WebSocketServer extends WebSocket
 
     use OnTaskTrait;
 
+    use CreateRequestTrait;
+
     /**
      * @param swoole_server          $server
      * @param swoole_websocket_frame $frame
@@ -36,23 +38,15 @@ class WebSocketServer extends WebSocket
      */
     public function doMessage(swoole_server $server, swoole_websocket_frame $frame)
     {
-        if ($request = $this->buildRequest($server, $frame)) {
-            $response = app()->handleRequest($request);
-            $fd = null !== ($fd = $response->getFileDescriptor()) ? $fd : $frame->fd;
-            if (false === $server->connection_info($fd)) {
-                return -1;
-            }
-            $server->push($fd, (string) $response->getBody());
-
-            app()->shutdown($request, $response);
-        }
-
         try {
             $connectionInfo = $server->connection_info($frame->fd);
             $request = $this->createRequest($frame->data, $connectionInfo);
             $response = app()->handleRequest($request);
             $fd = null !== ($fd = $response->getFileDescriptor()) ? $fd : $frame->fd;
             if (false === $server->connection_info($fd)) {
+                return -1;
+            }
+            if (false === $server->exist($fd)) {
                 return -1;
             }
             $server->push($fd, (string) $response->getBody());
