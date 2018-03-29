@@ -9,18 +9,23 @@
 
 namespace Uniondrug\Server\Servitization\Server;
 
-use FastD\Http\ServerRequest;
-use FastD\Packet\Json;
-use FastD\Swoole\Server\UDP;
 use swoole_server;
-use Uniondrug\Server\Servitization\OnWorkerStart;
+use Uniondrug\Packet\Json;
+use Uniondrug\Server\Servitization\CreateRequestTrait;
+use Uniondrug\Server\Servitization\OnTaskTrait;
+use Uniondrug\Server\Servitization\OnWorkerStartTrait;
+use Uniondrug\Swoole\Server\UDP;
 
 /**
  * Class UDPServer.
  */
 class UDPServer extends UDP
 {
-    use OnWorkerStart;
+    use OnWorkerStartTrait;
+
+    use OnTaskTrait;
+
+    use CreateRequestTrait;
 
     /**
      * @param swoole_server $server
@@ -29,22 +34,27 @@ class UDPServer extends UDP
      *
      * @return int|mixed
      *
-     * @throws \FastD\Packet\Exceptions\PacketException
+     * @throws \Uniondrug\Packet\Exceptions\PacketException
      */
     public function doPacket(swoole_server $server, $data, $clientInfo)
     {
-        $data = Json::decode($data);
-        $request = new ServerRequest($data['method'], $data['path']);
-        if (isset($data['args'])) {
-            if ('GET' === $request->getMethod()) {
-                $request->withQueryParams($data['args']);
-            } else {
-                $request->withParsedBody($data['args']);
-            }
+        try {
+            $connectionInfo = [
+                'remote_ip'   => $clientInfo['address'],
+                'remote_port' => $clientInfo['port'],
+            ];
+            $request = $this->createRequest($data, $connectionInfo);
+            $response = app()->handleRequest($request);
+
+            $server->sendto($clientInfo['address'], $clientInfo['port'], (string) $response->getBody());
+
+            app()->shutdown($request, $response);
+        } catch (\Exception $e) {
+            app()->getLogger('framework')->error("TCPServer Error: " . $e->getMessage());
+
+            $res = call_user_func(app()->getConfig()->path('exception.response'), $e);
+            $server->sendto($clientInfo['address'], $clientInfo['port'], Json::encode($res));
         }
-        $response = app()->handleRequest($request);
-        $server->sendto($clientInfo['address'], $clientInfo['port'], (string) $response->getBody());
-        app()->shutdown($request, $response);
 
         return 0;
     }

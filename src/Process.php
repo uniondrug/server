@@ -7,7 +7,7 @@
 namespace Uniondrug\Server;
 
 use swoole_process;
-use FastD\Swoole\Process as SwooleProcess;
+use Uniondrug\Swoole\Process as SwooleProcess;
 
 class Process extends SwooleProcess
 {

@@ -9,24 +9,24 @@
 
 namespace Uniondrug\Server\Servitization\Server;
 
-use FastD\Http\Response;
-use FastD\Http\SwooleServerRequest;
-use FastD\Packet\Json;
-use FastD\Swoole\Server\HTTP;
 use Psr\Http\Message\ServerRequestInterface;
 use swoole_http_request;
 use swoole_http_response;
-use swoole_server;
-use Uniondrug\Server\Servitization\OnWorkerStart;
-use Uniondrug\Server\Task;
+use Uniondrug\Http\Response;
+use Uniondrug\Http\SwooleServerRequest;
+use Uniondrug\Server\Servitization\OnTaskTrait;
+use Uniondrug\Server\Servitization\OnWorkerStartTrait;
 use Uniondrug\Server\Utils\Request;
+use Uniondrug\Swoole\Server\HTTP;
 
 /**
  * Class HTTPServer.
  */
 class HTTPServer extends HTTP
 {
-    use OnWorkerStart;
+    use OnWorkerStartTrait;
+
+    use OnTaskTrait;
 
     /**
      * @param swoole_http_request  $swooleRequet
@@ -91,39 +91,4 @@ class HTTPServer extends HTTP
     {
         return app()->handleRequest($serverRequest);
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function doTask(swoole_server $server, $data, $taskId, $workerId)
-    {
-        $TaskWorkerId = $server->worker_id;
-
-        app()->getLogger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . $data);
-        try {
-            $task = json_decode($data);
-            if ($task && isset($task->handler) && is_a($task->handler, Task\TaskHandler::class, true)) {
-                return app()->getShared($task->handler)->handle($task->data);
-            } else {
-                app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Data is not a valid Task object");
-
-                return false;
-            }
-        } catch (\Exception $e) {
-            app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Handle task failed. Error: " . $e->getMessage());
-
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function doFinish(swoole_server $server, $data, $taskId)
-    {
-        $workerId = $server->worker_id;
-
-        app()->getLogger("framework")->debug("[Worker $workerId] task $taskId finished, with data: " . serialize($data));
-    }
-
 }

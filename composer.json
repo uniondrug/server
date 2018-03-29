@@ -11,7 +11,7 @@
   ],
   "require": {
     "uniondrug/framework": "^2.0",
-    "fastd/swoole": "^2.2"
+    "uniondrug/swoole": "^2.0"
   },
   "autoload": {
     "psr-4": {

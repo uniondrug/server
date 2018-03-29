@@ -1,6 +1,6 @@
 <?php
 /**
- * Request.php
+ * Swoole http server 的Request信息封装工具
  *
  */
 
@@ -285,7 +285,7 @@ class Request
      */
     public function getUserAgent()
     {
-        return $this->request->header['user-agent'];
+        return $this->getHeader('user-agent');
     }
 
     /**

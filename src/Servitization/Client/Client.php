@@ -3,18 +3,19 @@
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2017
  *
- * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see       https://www.github.com/janhuang
+ * @see       http://www.fast-d.cn/
  */
 
 namespace Uniondrug\Server\Servitization\Client;
 
-use FastD\Http\Response;
+use Uniondrug\Http\Response;
+use Uniondrug\Swoole\Client as SwooleClient;
 
 /**
  * Class Consumer.
  */
-class Client extends \FastD\Swoole\Client
+class Client extends SwooleClient
 {
     /**
      * @return string
@@ -28,6 +29,7 @@ class Client extends \FastD\Swoole\Client
      * @param string $data
      *
      * @return Response
+     * @throws \Uniondrug\Packet\Exceptions\PacketException
      */
     public function send($data = '')
     {

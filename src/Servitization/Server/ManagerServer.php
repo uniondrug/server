@@ -9,9 +9,9 @@
 
 namespace Uniondrug\Server\Servitization\Server;
 
-use FastD\Swoole\Server\TCP;
 use swoole_server;
 use Uniondrug\Server\Application;
+use Uniondrug\Swoole\Server\TCP;
 
 /**
  * Class MonitorStatusServer.

@@ -9,18 +9,23 @@
 
 namespace Uniondrug\Server\Servitization\Server;
 
-use FastD\Http\ServerRequest;
-use FastD\Packet\Json;
-use FastD\Swoole\Server\TCP;
 use swoole_server;
-use Uniondrug\Server\Servitization\OnWorkerStart;
+use Uniondrug\Packet\Json;
+use Uniondrug\Server\Servitization\CreateRequestTrait;
+use Uniondrug\Server\Servitization\OnTaskTrait;
+use Uniondrug\Server\Servitization\OnWorkerStartTrait;
+use Uniondrug\Swoole\Server\TCP;
 
 /**
  * Class TCPServer.
  */
 class TCPServer extends TCP
 {
-    use OnWorkerStart;
+    use OnWorkerStartTrait;
+
+    use OnTaskTrait;
+
+    use CreateRequestTrait;
 
     /**
      * @param swoole_server $server
@@ -30,33 +35,37 @@ class TCPServer extends TCP
      *
      * @return int|mixed
      *
-     * @throws \FastD\Packet\Exceptions\PacketException
+     * @throws \Uniondrug\Packet\Exceptions\PacketException
      */
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
+        $data = trim($data);
         if ('quit' === $data) {
             $server->close($fd);
 
             return 0;
         }
-        $data = Json::decode($data);
-        $request = new ServerRequest($data['method'], $data['path']);
-        if (isset($data['args'])) {
-            if ('GET' === $request->getMethod()) {
-                $request->withQueryParams($data['args']);
-            } else {
-                $request->withParsedBody($data['args']);
+
+        try {
+            $connectionInfo = $server->connection_info($fd);
+            $request = $this->createRequest($data, $connectionInfo);
+            $response = app()->handleRequest($request);
+            if (null !== $response->getFileDescriptor()) {
+                $fd = $response->getFileDescriptor();
             }
+            if (false === $server->connection_info($fd)) {
+                app()->getLogger('framework')->error("TCPServer Error: Client has gone away.");
+
+                return -1;
+            }
+            $server->send($fd, (string) $response->getBody());
+            app()->shutdown($request, $response);
+        } catch (\Exception $e) {
+            app()->getLogger('framework')->error("TCPServer Error: " . $e->getMessage());
+
+            $res = call_user_func(app()->getConfig()->path('exception.response'), $e);
+            $server->send($fd, Json::encode($res));
         }
-        $response = app()->handleRequest($request);
-        if (null !== $response->getFileDescriptor()) {
-            $fd = $response->getFileDescriptor();
-        }
-        if (false === $server->connection_info($fd)) {
-            return -1;
-        }
-        $server->send($fd, (string) $response->getBody());
-        app()->shutdown($request, $response);
 
         return 0;
     }

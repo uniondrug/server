@@ -3,6 +3,7 @@
  * Table.php
  *
  */
+
 namespace Uniondrug\Server;
 
 class Table extends \Swoole\Table
@@ -71,6 +72,7 @@ class Table extends \Swoole\Table
         if ($row = $this->get($key)) {
             return $row[$column];
         }
+
         return false;
     }
 
@@ -83,6 +85,7 @@ class Table extends \Swoole\Table
         foreach ($this as $key => $value) {
             $array[$key] = $value;
         }
+
         return $array;
     }
 }
