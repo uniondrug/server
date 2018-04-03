@@ -1,11 +1,11 @@
 {
   "name": "uniondrug/server",
-  "description": "Uniondrug server. Based on Swoole, supported by FastD.",
+  "description": "Uniondrug Server Component for uniondrug/framework",
   "license": "MIT",
   "type": "library",
   "authors": [
     {
-      "name": "Uniondrug R&D Team",
+      "name": "Uniondrug Dev Team",
       "email": "dev@uniondrug.cn"
     }
   ],
