@@ -22,6 +22,11 @@ trait OnWorkerStartTrait
      */
     public function onWorkerStart(swoole_server $server, $worker_id)
     {
+        // Process Rename
+        $workerType = $server->taskworker ? 'TaskWorker' : 'Worker';
+        process_rename(app()->getName() . ' [' . $workerType . ' #' . $worker_id . ']');
+
+        // Call parent
         parent::onWorkerStart($server, $worker_id);
 
         // 挂起定时器，让数据库保持连接
