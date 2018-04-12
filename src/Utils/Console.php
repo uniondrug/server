@@ -45,7 +45,7 @@ class Console extends ConsoleOutput
         $wid = 0;
         $processFlag = isset(swoole()->master_pid) ? '@' : '#';
         $pid = getmypid();
-        if (isset(swoole()->worker_id)) {
+        if (isset(swoole()->worker_id) && swoole()->worker_id >= 0) {
             $wid = swoole()->worker_id;
             if (swoole()->taskworker) {
                 $processFlag = '^'; // taskworker
