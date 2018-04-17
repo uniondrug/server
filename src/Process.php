@@ -7,10 +7,13 @@
 namespace Uniondrug\Server;
 
 use swoole_process;
+use Uniondrug\Framework\Services\ServiceTrait;
 use Uniondrug\Swoole\Process as SwooleProcess;
 
 class Process extends SwooleProcess
 {
+    use ServiceTrait;
+
     /**
      * @var array
      */
