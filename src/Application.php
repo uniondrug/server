@@ -88,7 +88,11 @@ class Application extends Container
                     $phalconApplication->sendCookiesOnHandleRequest(false);
                 }
                 $phalconApplication->boot();
+
+                // 应用程序
                 $this->setShared('PhalconApplication', $phalconApplication);
+
+                // 任务分发器
                 $this->setShared('taskDispatcher', function () {
                     return new Dispatcher();
                 });

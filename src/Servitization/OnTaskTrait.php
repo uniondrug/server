@@ -44,4 +44,20 @@ trait OnTaskTrait
 
         app()->getLogger("framework")->debug("[Worker $workerId] task $taskId finished, with data: " . serialize($data));
     }
+
+    /**
+     * @inheritdoc
+     *
+     * 始终有ID=0的worker收到PipeMessage投递的任务，然后通过task()方法投递给taskworker执行
+     */
+    public function doPipeMessage(swoole_server $server, int $src_worker_id, $message)
+    {
+        $taskId = $server->task($message);
+        $workerId = swoole()->worker_id;
+        if (false === $taskId) {
+            app()->getLogger("framework")->error("[Worker $workerId] Dispatch task failed. message=$message");
+        } else {
+            app()->getLogger("framework")->debug("[Worker $workerId] task $taskId send.");
+        }
+    }
 }
