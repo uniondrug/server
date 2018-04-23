@@ -11,6 +11,7 @@ namespace Uniondrug\Server\Servitization\Server;
 
 use swoole_server;
 use Uniondrug\Server\Application;
+use Uniondrug\Server\Servitization\OnTaskTrait;
 use Uniondrug\Swoole\Server\TCP;
 
 /**
@@ -18,6 +19,8 @@ use Uniondrug\Swoole\Server\TCP;
  */
 class ManagerServer extends TCP
 {
+    use OnTaskTrait;
+
     /**
      * @param swoole_server $server
      * @param               $fd

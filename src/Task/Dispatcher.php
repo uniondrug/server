@@ -32,7 +32,10 @@ class Dispatcher
             app()->getLogger("framework")->error("Dispatch task failed. Handler: $handler is not a TaskHandler.");
             throw new \RuntimeException("Dispatch task failed. Handler: $handler is not a TaskHandler.");
         }
-        $task = Json::encode(['handler' => $handler, 'data' => $data]);
+        $task = Json::encode([
+            'handler' => $handler,
+            'data'    => $data,
+        ]);
         $taskId = swoole()->task($task);
         $workerId = swoole()->worker_id;
         if (false === $taskId) {
@@ -40,5 +43,24 @@ class Dispatcher
         } else {
             app()->getLogger("framework")->debug("[Worker $workerId] task $taskId send, handle: $handler.");
         }
+    }
+
+    /**
+     * 发送到ID=0的Worker，由Worker再deliver到Task进程。
+     *
+     * @param       $handler
+     * @param array $data
+     *
+     * @return bool
+     * @throws \Uniondrug\Packet\Exceptions\PacketException
+     */
+    public function dispatchByProcess($handler, $data = [])
+    {
+        $message = Json::encode([
+            'handler' => $handler,
+            'data'    => $data,
+        ]);
+
+        return swoole()->sendMessage($message, 0);
     }
 }
