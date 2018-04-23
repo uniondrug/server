@@ -7,6 +7,7 @@
 namespace Uniondrug\Server\Servitization;
 
 use swoole_server;
+use Uniondrug\Packet\Json;
 use Uniondrug\Server\Task\TaskHandler;
 
 trait OnTaskTrait
@@ -20,9 +21,9 @@ trait OnTaskTrait
 
         app()->getLogger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . $data);
         try {
-            $task = json_decode($data);
-            if ($task && isset($task->handler) && is_a($task->handler, TaskHandler::class, true)) {
-                return app()->getShared($task->handler)->handle($task->data);
+            $task = Json::decode($data, true);
+            if ($task && isset($task['handler']) && is_a($task['handler'], TaskHandler::class, true)) {
+                return app()->getShared($task['handler'])->handle($task['data']);
             } else {
                 app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Data is not a valid Task object");
 
