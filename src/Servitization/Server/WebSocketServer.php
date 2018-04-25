@@ -40,7 +40,7 @@ class WebSocketServer extends WebSocket
     {
         try {
             $connectionInfo = $server->connection_info($frame->fd);
-            $request = $this->createRequest($frame->data, $connectionInfo);
+            $request = $this->createRequest($frame->data, $frame->fd, $connectionInfo);
             $response = app()->handleRequest($request);
             $fd = null !== ($fd = $response->getFileDescriptor()) ? $fd : $frame->fd;
             if (false === $server->connection_info($fd)) {

@@ -12,13 +12,14 @@ use Uniondrug\Packet\Json;
 trait CreateRequestTrait
 {
     /**
-     * @param       $requestData
-     * @param array $connection
+     * @param string $requestData request data
+     * @param int    $fd          client fd
+     * @param array  $connection  connection info
      *
      * @return \Uniondrug\Http\ServerRequest
      * @throws \Uniondrug\Packet\Exceptions\PacketException
      */
-    public function createRequest($requestData, $connection = [])
+    public function createRequest($requestData, $fd, $connection = [])
     {
         if (empty($requestData)) {
             throw new \RuntimeException('Request data error: empty request.');
@@ -70,6 +71,9 @@ trait CreateRequestTrait
         ];
 
         // Client FD
+        $serverParams['CLIENT_FD'] = $fd;
+
+        // Server FD
         if (isset($connection['server_fd'])) {
             $serverParams['SERVER_FD'] = $connection['server_fd'];
         }
