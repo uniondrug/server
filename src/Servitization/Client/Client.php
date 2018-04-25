@@ -61,6 +61,9 @@ class Client extends SwooleClient
                 unset($headerLine, $key, $value);
             }, $responseHeaders);
 
+            if (isset($headers['Transfer-Encoding']) && $headers['Transfer-Encoding'] == 'chunked') {
+                $response = $this->decodeChunked($response);
+            }
             if (isset($headers['Content-Encoding'])) {
                 $response = zlib_decode($response);
             }
@@ -68,5 +71,53 @@ class Client extends SwooleClient
         }
 
         return new Response($response, $statusCode, $headers);
+    }
+
+    /**
+     * @param $str
+     *
+     * @return bool|string
+     */
+    public function decodeChunked($str)
+    {
+        // A string to hold the result
+        $result = '';
+
+        // Split input by CRLF
+        $parts = explode("\r\n", $str);
+
+        // These vars track the current chunk
+        $chunkLen = 0;
+        $thisChunk = '';
+
+        // Loop the data
+        while (($part = array_shift($parts)) !== NULL) {
+            if ($chunkLen) {
+                // Add the data to the string
+                // Don't forget, the data might contain a literal CRLF
+                $thisChunk .= $part."\r\n";
+                if (strlen($thisChunk) == $chunkLen) {
+                    // Chunk is complete
+                    $result .= $thisChunk;
+                    $chunkLen = 0;
+                    $thisChunk = '';
+                } else if (strlen($thisChunk) == $chunkLen + 2) {
+                    // Chunk is complete, remove trailing CRLF
+                    $result .= substr($thisChunk, 0, -2);
+                    $chunkLen = 0;
+                    $thisChunk = '';
+                } else if (strlen($thisChunk) > $chunkLen) {
+                    // Data is malformed
+                    return FALSE;
+                }
+            } else {
+                // If we are not in a chunk, get length of the new one
+                if ($part === '') continue;
+                if (!$chunkLen = hexdec($part)) break;
+            }
+        }
+
+        // Return the decoded data of FALSE if it is incomplete
+        return ($chunkLen) ? FALSE : $result;
     }
 }

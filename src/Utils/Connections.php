@@ -15,11 +15,18 @@ class Connections
      */
     public static function dropConnections()
     {
+        // Mysql
         foreach (static::$serviceNames as $serviceName) {
             if (app()->hasSharedInstance($serviceName)) {
                 app()->getShared($serviceName)->close();
                 app()->removeSharedInstance($serviceName);
             }
+        }
+
+        // Redis
+        if (app()->hasSharedInstance('redis')) {
+            app()->getShared('redis')->close();
+            app()->removeSharedInstance('redis');
         }
     }
 

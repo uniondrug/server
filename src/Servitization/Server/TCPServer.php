@@ -40,6 +40,11 @@ class TCPServer extends TCP
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         $data = trim($data);
+        if ('ping' === $data) {
+            $server->send($fd, 'pong');
+            return 0;
+        }
+
         if ('quit' === $data) {
             $server->close($fd);
 
@@ -48,7 +53,7 @@ class TCPServer extends TCP
 
         try {
             $connectionInfo = $server->connection_info($fd);
-            $request = $this->createRequest($data, $connectionInfo);
+            $request = $this->createRequest($data, $fd, $connectionInfo);
             $response = app()->handleRequest($request);
             if (null !== $response->getFileDescriptor()) {
                 $fd = $response->getFileDescriptor();

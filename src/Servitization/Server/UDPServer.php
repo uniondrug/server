@@ -43,7 +43,7 @@ class UDPServer extends UDP
                 'remote_ip'   => $clientInfo['address'],
                 'remote_port' => $clientInfo['port'],
             ];
-            $request = $this->createRequest($data, $connectionInfo);
+            $request = $this->createRequest($data, -1, $connectionInfo);
             $response = app()->handleRequest($request);
 
             $server->sendto($clientInfo['address'], $clientInfo['port'], (string) $response->getBody());
