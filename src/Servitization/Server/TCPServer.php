@@ -52,10 +52,20 @@ class TCPServer extends TCP
             return 0;
         }
 
+        $request = null;
         try {
+            // 1.Build request object and call app to handle it.
             $connectionInfo = $server->connection_info($fd);
             $request = $this->createRequest($data, $fd, $connectionInfo);
             $response = app()->handleRequest($request);
+
+            // 2.Build response data with headers and body
+            foreach ($response->getHeaders() as $key => $header) {
+                $responseData['headers'][$key] = $response->getHeaderLine($key);
+            }
+            $responseData['body'] = (string) $response->getBody();
+
+            // 3.Retrieve socket fd
             if (null !== $response->getFileDescriptor()) {
                 $fd = $response->getFileDescriptor();
             }
@@ -64,13 +74,29 @@ class TCPServer extends TCP
 
                 return -1;
             }
-            $server->send($fd, (string) $response->getBody());
+
+            // 4.Send data to client
+            $server->send($fd, Json::encode($responseData));
+
+            // 5.Cleanup session data
             app()->shutdown($request, $response);
+
         } catch (\Exception $e) {
+            // 1. Clean up global vars.
+            if ($request !== null) {
+                app()->shutdown($request, null);
+            }
             app()->getLogger('framework')->error("TCPServer Error: " . $e->getMessage());
 
+            // 2. Build error messages
             $res = call_user_func(app()->getConfig()->path('exception.response'), $e);
-            $server->send($fd, Json::encode($res));
+            $responseData = [
+                'headers' => [],
+                'body' => Json::encode($res),
+            ];
+
+            // 3. Send to client
+            $server->send($fd, Json::encode($responseData));
         }
 
         return 0;

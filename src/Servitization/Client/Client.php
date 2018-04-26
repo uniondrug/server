@@ -10,6 +10,7 @@
 namespace Uniondrug\Server\Servitization\Client;
 
 use Uniondrug\Http\Response;
+use Uniondrug\Packet\Json;
 use Uniondrug\Swoole\Client as SwooleClient;
 
 /**
@@ -84,6 +85,14 @@ class Client extends SwooleClient
                 $response = zlib_decode($response);
             }
             unset($responseHeaders, $code);
+        } elseif ('tcp' === strtolower($this->scheme)) {
+            try {
+                $responseData = Json::decode($response, 1);
+                $response = $responseData['body'];
+                $headers  = $responseData['headers'];
+            } catch (\Exception $e) {
+                // Do nothing
+            }
         }
 
         return new Response($response, $statusCode, $headers);
