@@ -26,6 +26,22 @@ class Client extends SwooleClient
     }
 
     /**
+     * 同步客户端，已经连接过，则尝试ping一下。
+     *
+     * @return bool
+     */
+    public function ping()
+    {
+        if ($this->client->isConnected() && !$this->async) {
+            $this->client->send('ping');
+            $res = $this->receive();
+            return $res === 'pong';
+        }
+
+        return false;
+    }
+
+    /**
      * @param string $data
      *
      * @return Response
@@ -91,11 +107,11 @@ class Client extends SwooleClient
         $thisChunk = '';
 
         // Loop the data
-        while (($part = array_shift($parts)) !== NULL) {
+        while (($part = array_shift($parts)) !== null) {
             if ($chunkLen) {
                 // Add the data to the string
                 // Don't forget, the data might contain a literal CRLF
-                $thisChunk .= $part."\r\n";
+                $thisChunk .= $part . "\r\n";
                 if (strlen($thisChunk) == $chunkLen) {
                     // Chunk is complete
                     $result .= $thisChunk;
@@ -108,7 +124,7 @@ class Client extends SwooleClient
                     $thisChunk = '';
                 } else if (strlen($thisChunk) > $chunkLen) {
                     // Data is malformed
-                    return FALSE;
+                    return false;
                 }
             } else {
                 // If we are not in a chunk, get length of the new one
@@ -118,6 +134,6 @@ class Client extends SwooleClient
         }
 
         // Return the decoded data of FALSE if it is incomplete
-        return ($chunkLen) ? FALSE : $result;
+        return ($chunkLen) ? false : $result;
     }
 }

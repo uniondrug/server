@@ -40,6 +40,7 @@ class TCPServer extends TCP
     public function doWork(swoole_server $server, $fd, $data, $from_id)
     {
         $data = trim($data);
+
         if ('ping' === $data) {
             $server->send($fd, 'pong');
             return 0;
