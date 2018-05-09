@@ -70,7 +70,7 @@ class TCPServer extends TCP
                 $fd = $response->getFileDescriptor();
             }
             if (false === $server->connection_info($fd)) {
-                app()->getLogger('framework')->error("TCPServer Error: Client has gone away.");
+                console()->error("[TCPServer] Error: Client has gone away.");
 
                 return -1;
             }
@@ -86,7 +86,7 @@ class TCPServer extends TCP
             if ($request !== null) {
                 app()->shutdown($request, null);
             }
-            app()->getLogger('framework')->error("TCPServer Error: " . $e->getMessage());
+            console()->error("[TCPServer] Error: " . $e->getMessage());
 
             // 2. Build error messages
             $res = call_user_func(app()->getConfig()->path('exception.response'), $e);

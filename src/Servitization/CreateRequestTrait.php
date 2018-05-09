@@ -41,20 +41,23 @@ trait CreateRequestTrait
         }
 
         // _SERVER
-        $host = 'localhost';
+        $host = isset($connection['server_addr']) ? $connection['server_addr'] : gethostbyname('localhost');
+        if (!$host) {
+            $host = 'localhost';
+        }
         $serverParams = [
             'REQUEST_METHOD'       => $request->method,
             'REQUEST_URI'          => $parts['path'],
             'PATH_INFO'            => $parts['path'],
             'REQUEST_TIME'         => time(),
             'REQUEST_TIME_FLOAT'   => microtime(1),
-            'GATEWAY_INTERFACE'    => 'Swoole/' . SWOOLE_VERSION,
+            'GATEWAY_INTERFACE'    => 'swoole/' . SWOOLE_VERSION,
 
             // Server
-            'SERVER_PROTOCOL'      => 'HTTP/1.1',
-            'REQUEST_SCHEMA'       => 'http',
+            'SERVER_PROTOCOL'      => 'TCP/1.1',
+            'REQUEST_SCHEME'       => 'TCP',
             'SERVER_NAME'          => $host,
-            'SERVER_ADDR'          => isset($connection['server_addr']) ? $connection['server_addr'] : gethostbyname('localhost'),
+            'SERVER_ADDR'          => $host,
             'SERVER_PORT'          => isset($connection['server_port']) ? $connection['server_port'] : 0,
             'REMOTE_ADDR'          => $connection['remote_ip'],
             'REMOTE_PORT'          => $connection['remote_port'],
@@ -93,7 +96,7 @@ trait CreateRequestTrait
         $headers = [];
         foreach ($serverParams as $k => $v) {
             if (0 === strpos($k, 'HTTP_')) {
-                $headers[str_replace('HTTP_', '', $k)] = $v;
+                $headers[strtr(str_replace('HTTP_', '', $k), '_', '-')] = $v;
             }
         }
         if (isset($request->headers) && !empty($request->headers)) {

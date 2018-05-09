@@ -19,6 +19,19 @@ use Uniondrug\Swoole\Client as SwooleClient;
 class Client extends SwooleClient
 {
     /**
+     * reset headers and cookies
+     *
+     * @return $this
+     */
+    public function reset()
+    {
+        $this->cookies = [];
+        $this->headers = [];
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getProtocol()
@@ -33,10 +46,14 @@ class Client extends SwooleClient
      */
     public function ping()
     {
-        if ($this->client->isConnected() && !$this->async) {
-            $this->client->send('ping');
-            $res = $this->receive();
-            return $res === 'pong';
+        try {
+            if ($this->client->isConnected() && !$this->async) {
+                $this->client->send('ping');
+                $res = $this->receive();
+
+                return $res === 'pong';
+            }
+        } catch (\Throwable $e) {
         }
 
         return false;
@@ -89,7 +106,7 @@ class Client extends SwooleClient
             try {
                 $responseData = Json::decode($response, 1);
                 $response = $responseData['body'];
-                $headers  = $responseData['headers'];
+                $headers = $responseData['headers'];
             } catch (\Exception $e) {
                 // Do nothing
             }
