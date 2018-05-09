@@ -195,7 +195,7 @@ class Application extends Container
 
         // 设置Headers
         foreach ($request->getHeaders() as $key => $value) {
-            $serverKey = 'HTTP_' . strtoupper($key);
+            $serverKey = 'HTTP_' . strtoupper(strtr($key, '-', '_'));
             if (!isset($_SERVER[$serverKey])) {
                 $_SERVER[$serverKey] = $request->getHeaderLine($key); // getHeaderLine return a string.
             }
