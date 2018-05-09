@@ -5,6 +5,7 @@
 
 namespace Uniondrug\Server\Utils;
 
+use Phalcon\Di;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
@@ -34,65 +35,90 @@ class Console extends ConsoleOutput
     }
 
     /**
-     * @param $level
-     * @param $msg
+     * @param        $msg
+     * @param string $level
+     * @param array  $ext
      */
-    public function log($msg, $level = 'INFO')
+    public function log($msg, $level = 'INFO', ...$ext)
     {
         $level = strtoupper($level);
         $format = $this->getFormat($level);
         $time = date("Y-m-d H:i:s");
         $wid = 0;
-        $processFlag = isset(swoole()->master_pid) ? '@' : '#';
+        $processFlag = '#';
         $pid = getmypid();
-        if (isset(swoole()->worker_id) && swoole()->worker_id >= 0) {
-            $wid = swoole()->worker_id;
-            if (swoole()->taskworker) {
-                $processFlag = '^'; // taskworker
-            } else {
-                $processFlag = '*'; // worker
+        $msg = sprintf($msg, ...$ext);
+
+        // only works under swoole mode
+        if (Di::getDefault()->has('server')) {
+            $processFlag = isset(swoole()->master_pid) ? '@' : '#';
+            if (isset(swoole()->worker_id) && swoole()->worker_id >= 0) {
+                $wid = swoole()->worker_id;
+                if (swoole()->taskworker) {
+                    $processFlag = '^'; // taskworker
+                } else {
+                    $processFlag = '*'; // worker
+                }
             }
+            if (isset(swoole()->manager_pid) && swoole()->manager_pid == $pid) {
+                $processFlag = '$'; // manager
+            }
+            if (isset(swoole()->master_pid) && swoole()->master_pid == $pid) {
+                $processFlag = '#'; // master
+            }
+
+            // Write to console
+            $messages = sprintf("[%s %s%d.%d]<%s>\t%s\t</%s>%s", $time, $processFlag, $pid, $wid, $format, $level, $format, $msg);
+            $this->writeln($messages);
         }
-        if (isset(swoole()->manager_pid) && swoole()->manager_pid == $pid) {
-            $processFlag = '$'; // manager
+
+        // Log to file
+        try {
+            $logMethod = strtolower($level);
+
+            $logger = app()->getLogger("server");
+            if (method_exists($logger, $logMethod)) {
+                $logMessage = sprintf("[%s%d.%d] %s", $processFlag, $pid, $wid, $msg);
+                call_user_func_array([$logger, $logMethod], [$logMessage]);
+            }
+        } catch (\Exception $e) {
+            $this->writeln(sprintf("[%s %s%d.%d]<error>\tERROR\t</error>%s", $time, $processFlag, $pid, $wid, $e->getMessage()));
         }
-        if (isset(swoole()->master_pid) && swoole()->master_pid == $pid) {
-            $processFlag = '#'; // master
-        }
-
-        $messages = sprintf("[%s %s%d.%d]<%s>\t%s\t</%s>%s", $time, $processFlag, $pid, $wid, $format, $level, $format, $msg);
-        $this->writeln($messages);
     }
 
     /**
-     * @param $msg
+     * @param       $msg
+     * @param array $ext
      */
-    public function error($msg)
+    public function error($msg, ...$ext)
     {
-        $this->log($msg, 'ERROR');
+        $this->log($msg, 'ERROR', ...$ext);
     }
 
     /**
-     * @param $msg
+     * @param       $msg
+     * @param array $ext
      */
-    public function warning($msg)
+    public function warning($msg, ...$ext)
     {
-        $this->log($msg, 'WARNING');
+        $this->log($msg, 'WARNING', ...$ext);
     }
 
     /**
-     * @param $msg
+     * @param       $msg
+     * @param array $ext
      */
-    public function info($msg)
+    public function info($msg, ...$ext)
     {
-        $this->log($msg, 'INFO');
+        $this->log($msg, 'INFO', ...$ext);
     }
 
     /**
-     * @param $msg
+     * @param       $msg
+     * @param array $ext
      */
-    public function debug($msg)
+    public function debug($msg, ...$ext)
     {
-        $this->log($msg, 'DEBUG');
+        $this->log($msg, 'DEBUG', ...$ext);
     }
 }

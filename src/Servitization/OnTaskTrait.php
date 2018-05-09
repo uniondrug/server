@@ -17,20 +17,18 @@ trait OnTaskTrait
      */
     public function doTask(swoole_server $server, $data, $taskId, $workerId)
     {
-        $TaskWorkerId = $server->worker_id;
-
-        app()->getLogger("framework")->debug("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] With data: " . $data);
+        console()->debug("[Task] doTask: fromWorkerId=%d, taskId=%d, data=%s", $workerId, $taskId, $data);
         try {
             $task = Json::decode($data, true);
             if ($task && isset($task['handler']) && is_a($task['handler'], TaskHandler::class, true)) {
                 return app()->getShared($task['handler'])->handle($task['data']);
             } else {
-                app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Data is not a valid Task object");
+                console()->error("[Task] doTask: fromWorkerId=%d, taskId=%d, Data is not a valid Task object", $workerId, $taskId);
 
                 return false;
             }
         } catch (\Exception $e) {
-            app()->getLogger("framework")->error("[TaskWorker $TaskWorkerId] [FromWorkerId: $workerId, TaskId: $taskId] Handle task failed. Error: " . $e->getMessage());
+            console()->error("[Task] doTask: fromWorkerId=%d, taskId=%d, error=%s",$workerId, $taskId, $e->getMessage());
 
             return false;
         }
@@ -41,9 +39,7 @@ trait OnTaskTrait
      */
     public function doFinish(swoole_server $server, $data, $taskId)
     {
-        $workerId = $server->worker_id;
-
-        app()->getLogger("framework")->debug("[Worker $workerId] task $taskId finished, with data: " . serialize($data));
+        console()->debug("[Task] doFinish: taskId=%d, result=%s", $taskId, serialize($data));
     }
 
     /**
@@ -54,11 +50,10 @@ trait OnTaskTrait
     public function doPipeMessage(swoole_server $server, int $src_worker_id, $message)
     {
         $taskId = $server->task($message);
-        $workerId = swoole()->worker_id;
-        if (false === $taskId) {
-            app()->getLogger("framework")->error("[Worker $workerId] Dispatch task failed. message=$message");
+        if (false === true) {
+            console()->error("[Task] doPipeMessage: data=%s, dispatch task failed", $message);
         } else {
-            app()->getLogger("framework")->debug("[Worker $workerId] task $taskId send.");
+            console()->debug("[Task] doPipeMessage: data=%s, dispatched, taskId=%d", $message, $taskId);
         }
     }
 }

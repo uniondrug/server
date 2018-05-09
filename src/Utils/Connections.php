@@ -44,15 +44,15 @@ class Connections
                     try {
                         app()->getShared($serviceName)->query("select 1");
                     } catch (\Exception $e) {
-                        app()->getLogger('database')->alert("[$pid] [$serviceName] connection lost ({$e->getMessage()})");
+                        console()->warning("[Connection] service=%s, error=%s, connection lost", $serviceName, $e->getMessage());
                         if (preg_match("/(errno=32 Broken pipe)|(MySQL server has gone away)/i", $e->getMessage())) {
                             $tryTimes++;
                             app()->getShared($serviceName)->close();
                             app()->removeSharedInstance($serviceName);
-                            app()->getLogger('database')->alert("[$pid] [$serviceName] try to reconnect[$tryTimes]");
+                            console()->warning("[Connection] service=%s, try=%d, try to reconnect", $serviceName, $tryTimes);
                             continue;
                         } else {
-                            app()->getLogger('database')->error("[$pid] [$serviceName] try to reconnect failed");
+                            console()->error("[Connection] service=%s, try to reconnect failed", $serviceName);
                             process_kill($pid);
                         }
                     }

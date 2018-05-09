@@ -50,7 +50,7 @@ class UDPServer extends UDP
 
             app()->shutdown($request, $response);
         } catch (\Exception $e) {
-            app()->getLogger('framework')->error("TCPServer Error: " . $e->getMessage());
+            console()->error("TCPServer Error: " . $e->getMessage());
 
             $res = call_user_func(app()->getConfig()->path('exception.response'), $e);
             $server->sendto($clientInfo['address'], $clientInfo['port'], Json::encode($res));
