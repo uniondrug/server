@@ -61,7 +61,7 @@ try {
         new InputOption('help', 'h', InputOption::VALUE_OPTIONAL, 'Show help', null),
     ]));
 
-    $output->writeln(sprintf("%s <info>%s</info>", $logo, "2.0.0"));
+    $output->writeln(sprintf("%s <info>%s</info>", $logo, Application::VERSION));
     $output->writeln('');
     if ($input->hasParameterOption(['--help', '-h'])) {
         $output->writeln("<comment>Usage:</comment>");
