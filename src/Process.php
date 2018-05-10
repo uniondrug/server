@@ -65,7 +65,27 @@ class Process extends SwooleProcess
         // 注册定时器测试
         Connections::keepConnections();
 
+        // 调用处理进程
         parent::runProcess($worker);
+    }
+
+    /**
+     * 检查父进程状态，如果已经退出，或者不再活跃，子进程自己退出
+     */
+    public function checkParent()
+    {
+        if (function_exists('posix_getppid')) {
+            $parentPid = posix_getppid();
+            if ($parentPid == 1) {
+                return false;
+            } else {
+                if (!swoole_process::kill($parentPid, 0)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
