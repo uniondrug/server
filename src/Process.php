@@ -77,9 +77,13 @@ class Process extends SwooleProcess
         if (function_exists('posix_getppid')) {
             $parentPid = posix_getppid();
             if ($parentPid == 1) {
+                console()->debug('[checkParent] 父进程已经退出');
+
                 return false;
             } else {
-                if (!swoole_process::kill($parentPid, 0)) {
+                if (!posix_kill($parentPid, 0)) {
+                    console()->debug('[checkParent] 父进程已经不存在');
+
                     return false;
                 }
             }
