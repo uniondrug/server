@@ -18,6 +18,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Uniondrug\Framework\Container;
 use Uniondrug\Http\Response;
 use Uniondrug\Server\Task\Dispatcher;
+use Uniondrug\Server\Utils\Connections;
 
 /**
  * Class Application.
@@ -127,6 +128,9 @@ class Application extends Container
      */
     public function handleRequest(ServerRequestInterface $request)
     {
+        // 处理业务前检测数据库连接，自动重连
+        Connections::testConnections();
+
         try {
             // 将PSR规范的HTTP请求放入容器，为了兼容处理
             $this->setShared('PsrRequest', $request);
