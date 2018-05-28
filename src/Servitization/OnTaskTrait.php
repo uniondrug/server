@@ -9,6 +9,7 @@ namespace Uniondrug\Server\Servitization;
 use swoole_server;
 use Uniondrug\Packet\Json;
 use Uniondrug\Server\Task\TaskHandler;
+use Uniondrug\Server\Utils\Connections;
 
 trait OnTaskTrait
 {
@@ -18,6 +19,10 @@ trait OnTaskTrait
     public function doTask(swoole_server $server, $data, $taskId, $workerId)
     {
         console()->debug("[Task] doTask: fromWorkerId=%d, taskId=%d, data=%s", $workerId, $taskId, $data);
+
+        // 测试数据库连接
+        Connections::testConnections();
+
         try {
             $task = Json::decode($data, true);
             if ($task && isset($task['handler']) && is_a($task['handler'], TaskHandler::class, true)) {
