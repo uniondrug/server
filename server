@@ -11,9 +11,12 @@
 set_time_limit(0);
 date_default_timezone_set('PRC');
 
+// detect app root
+$root = __detectRoot();
+
 // autoload composer
 foreach ([
-             getcwd() . '/vendor/autoload.php',
+             $root . '/vendor/autoload.php',
              __DIR__ . '/../../autoload.php',
              __DIR__ . '/../vendor/autoload.php',
              __DIR__ . '/vendor/autoload.php',
@@ -56,7 +59,7 @@ try {
     $input = new ArgvInput(null, new InputDefinition([
         new InputArgument('action', InputArgument::OPTIONAL, 'The server action', 'status'),
         new InputOption('daemon', 'd', InputOption::VALUE_NONE, 'Do not ask any interactive question'),
-        new InputOption('path', 't', InputOption::VALUE_OPTIONAL, 'Web root relative path', getcwd()),
+        new InputOption('path', 't', InputOption::VALUE_OPTIONAL, 'Web root relative path', $root),
         new InputOption('env', 'e', InputOption::VALUE_OPTIONAL, 'Enviroment', 'development'),
         new InputOption('help', 'h', InputOption::VALUE_OPTIONAL, 'Show help', null),
     ]));
@@ -69,7 +72,7 @@ try {
         $output->writeln("");
         $output->writeln("<comment>Options:</comment>");
         $output->writeln(sprintf("  <info>%s</info> %s %s", "-d, --daemon", " ", "Run server as daemon, Do not ask any interactive question"));
-        $output->writeln(sprintf("  <info>%s</info> %s %s", "-t, --path", "   ", "Web root relative path. Default: <comment>" . getcwd() . "</comment>"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-t, --path", "   ", "Web root relative path. Default: <comment>" . $root . "</comment>"));
         $output->writeln(sprintf("  <info>%s</info> %s %s", "-e, --env", "    ", "Environment. Default: <comment>development</comment>"));
         $output->writeln(sprintf("  <info>%s</info> %s %s", "-h, --help", "   ", "Show this help"));
         $output->writeln("");
@@ -98,4 +101,24 @@ try {
     $output->writeln('');
     $output->write($e->getTraceAsString());
     $output->writeln('');
+}
+
+function __detectRoot()
+{
+    $cwd = getcwd();
+    $script = $_SERVER['SCRIPT_FILENAME'];
+    if (substr($script, 0, 1) != DIRECTORY_SEPARATOR) {
+        $script = $cwd . DIRECTORY_SEPARATOR . $script;
+    }
+    $rootPath = dirname($script);
+    while (!file_exists($rootPath . DIRECTORY_SEPARATOR . 'app')) {
+        $rootPath = dirname($rootPath);
+        if ($rootPath == DIRECTORY_SEPARATOR) {
+            echo PHP_EOL;
+            echo "Error: Cannot detect app root" . PHP_EOL;
+            echo PHP_EOL;
+            exit;
+        }
+    }
+    return $rootPath;
 }

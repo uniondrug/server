@@ -137,7 +137,7 @@ class Application extends Container
 
             // 转换数据给Phalcon
             $this->wrapRequest($request);
-            
+
             // PhalconApplication::handle() return a Response|false, or throw Exception
             $response = $this->wrapResponse($this->get('PhalconApplication')->handle());
 
