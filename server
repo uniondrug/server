@@ -3,40 +3,29 @@
 /**
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2016
- *
  * @link      https://www.github.com/janhuang
  * @link      https://fastdlabs.com
  */
-
 set_time_limit(0);
 date_default_timezone_set('PRC');
-
 // detect app root
 $root = __detectRoot();
-
 // autoload composer
 foreach ([
-             $root . '/vendor/autoload.php',
-             __DIR__ . '/../../autoload.php',
-             __DIR__ . '/../vendor/autoload.php',
-             __DIR__ . '/vendor/autoload.php',
-         ] as $value) {
+    $root.'/vendor/autoload.php',
+    __DIR__.'/../../autoload.php',
+    __DIR__.'/../vendor/autoload.php',
+    __DIR__.'/vendor/autoload.php',
+] as $value) {
     if (file_exists($value)) {
         define('COMPOSER_INSTALL', $value);
         break;
     }
 }
-
 if (!defined('COMPOSER_INSTALL')) {
-    fwrite(STDERR,
-        'You need to set up the project dependencies using the following commands:' . PHP_EOL .
-        'wget http://getcomposer.org/composer.phar' . PHP_EOL .
-        'php composer.phar install' . PHP_EOL
-    );
+    fwrite(STDERR, 'You need to set up the project dependencies using the following commands:'.PHP_EOL.'wget http://getcomposer.org/composer.phar'.PHP_EOL.'php composer.phar install'.PHP_EOL);
 }
-
 include COMPOSER_INSTALL;
-
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -54,27 +43,33 @@ $logo = <<<LOGO
                                           /____/   Server
 LOGO;
 $output = new ConsoleOutput();
-
 try {
     $input = new ArgvInput(null, new InputDefinition([
         new InputArgument('action', InputArgument::OPTIONAL, 'The server action', 'status'),
+        new InputOption('container', 'c', InputOption::VALUE_OPTIONAL, 'Docker container', null),
         new InputOption('daemon', 'd', InputOption::VALUE_NONE, 'Do not ask any interactive question'),
+        new InputOption('ipaddr', 'i', InputOption::VALUE_NONE, 'Server ip address'),
         new InputOption('path', 't', InputOption::VALUE_OPTIONAL, 'Web root relative path', $root),
         new InputOption('env', 'e', InputOption::VALUE_OPTIONAL, 'Enviroment', 'development'),
         new InputOption('help', 'h', InputOption::VALUE_OPTIONAL, 'Show help', null),
     ]));
-
     $output->writeln(sprintf("%s <info>%s</info>", $logo, Application::VERSION));
     $output->writeln('');
-    if ($input->hasParameterOption(['--help', '-h'])) {
+    if ($input->hasParameterOption([
+        '--help',
+        '-h'
+    ])
+    ) {
         $output->writeln("<comment>Usage:</comment>");
         $output->writeln(" server [command] [option]");
         $output->writeln("");
         $output->writeln("<comment>Options:</comment>");
-        $output->writeln(sprintf("  <info>%s</info> %s %s", "-d, --daemon", " ", "Run server as daemon, Do not ask any interactive question"));
-        $output->writeln(sprintf("  <info>%s</info> %s %s", "-t, --path", "   ", "Web root relative path. Default: <comment>" . $root . "</comment>"));
-        $output->writeln(sprintf("  <info>%s</info> %s %s", "-e, --env", "    ", "Environment. Default: <comment>development</comment>"));
-        $output->writeln(sprintf("  <info>%s</info> %s %s", "-h, --help", "   ", "Show this help"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-c, --container", " ", "运行在Docker容器中, 默认: <comment>no</comment>, 接受: <comment>yes</comment>、<comment>off</comment>"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-d, --daemon", "    ", "以守护进程运行, 不接受参数"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-e, --env", "       ", "环境名称. 默认: <comment>development</comment>, 接受: <comment>development</comment>、<comment>testing</comment>、<comment>release</comment>、<comment>production</comment>"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-i, --ipaddr", "    ", "Docker容器的IP地址"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-p, --path", "      ", "Web相对路径. 默认: <comment>{$root}</comment>"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-h, --help", "      ", "Show this help"));
         $output->writeln("");
         $output->writeln("<comment>Available commands:</comment>");
         $output->writeln(sprintf("  <info>%s</info> %s %s", "start", " ", "Start the server"));
@@ -83,39 +78,38 @@ try {
         $output->writeln(sprintf("  <info>%s</info> %s %s", "status", "", "Show the server status [<comment>default</comment>]"));
         exit(0);
     }
-
     $path = $input->getOption('path');
     $env = $input->getOption('env');
+    $docker = $input->getOption('container');
     putenv("APP_ENV=$env");
-
+    putenv("DOCKER_CONTAINER={$docker}");
     $server = new Server(new Application($path));
     $server->run($input);
-} catch (\Throwable $e) {
+} catch(\Throwable $e) {
     $output->writeln('');
     $output->writeln(sprintf("<info>Oho, Some error found:</info> <error>%s</error>", $e->getMessage()));
     $output->writeln('');
-    $output->writeln("<info> File: </info>" . $e->getFile());
-    $output->writeln("<info> Line: </info>" . $e->getLine());
+    $output->writeln("<info> File: </info>".$e->getFile());
+    $output->writeln("<info> Line: </info>".$e->getLine());
     $output->writeln('');
     $output->writeln("<info>Trace: </info>");
     $output->writeln('');
     $output->write($e->getTraceAsString());
     $output->writeln('');
 }
-
 function __detectRoot()
 {
     $cwd = getcwd();
     $script = $_SERVER['SCRIPT_FILENAME'];
     if (substr($script, 0, 1) != DIRECTORY_SEPARATOR) {
-        $script = $cwd . DIRECTORY_SEPARATOR . $script;
+        $script = $cwd.DIRECTORY_SEPARATOR.$script;
     }
     $rootPath = dirname($script);
-    while (!file_exists($rootPath . DIRECTORY_SEPARATOR . 'app')) {
+    while (!file_exists($rootPath.DIRECTORY_SEPARATOR.'app')) {
         $rootPath = dirname($rootPath);
         if ($rootPath == DIRECTORY_SEPARATOR) {
             echo PHP_EOL;
-            echo "Error: Cannot detect app root" . PHP_EOL;
+            echo "Error: Cannot detect app root".PHP_EOL;
             echo PHP_EOL;
             exit;
         }
