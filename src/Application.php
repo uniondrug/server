@@ -53,7 +53,7 @@ class Application extends Container
     public function getName()
     {
         $e = substr($this->environment(), 0, 1);
-        return $e.'.'.$this->name;
+        return '['.strtoupper($e).']'.$this->name;
     }
 
     /**
