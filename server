@@ -49,7 +49,8 @@ try {
         new InputOption('container', 'c', InputOption::VALUE_OPTIONAL, 'Docker container', null),
         new InputOption('daemon', 'd', InputOption::VALUE_NONE, 'Do not ask any interactive question'),
         new InputOption('ipaddr', 'i', InputOption::VALUE_OPTIONAL, 'Server ip address'),
-        new InputOption('path', 't', InputOption::VALUE_OPTIONAL, 'Web root relative path', $root),
+        new InputOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Server port'),
+        new InputOption('path', 'x', InputOption::VALUE_OPTIONAL, 'Web root relative path', $root),
         new InputOption('env', 'e', InputOption::VALUE_OPTIONAL, 'Enviroment', 'development'),
         new InputOption('help', 'h', InputOption::VALUE_OPTIONAL, 'Show help', null),
     ]));
@@ -67,8 +68,9 @@ try {
         $output->writeln(sprintf("  <info>%s</info> %s %s", "-c, --container", " ", "运行在Docker容器中, 默认: <comment>no</comment>, 接受: <comment>yes</comment>、<comment>off</comment>"));
         $output->writeln(sprintf("  <info>%s</info> %s %s", "-d, --daemon", "    ", "以守护进程运行, 不接受参数"));
         $output->writeln(sprintf("  <info>%s</info> %s %s", "-e, --env", "       ", "环境名称. 默认: <comment>development</comment>, 接受: <comment>development</comment>、<comment>testing</comment>、<comment>release</comment>、<comment>production</comment>"));
-        $output->writeln(sprintf("  <info>%s</info> %s %s", "-i, --ipaddr", "    ", "Docker容器的IP地址"));
-        $output->writeln(sprintf("  <info>%s</info> %s %s", "-p, --path", "      ", "Web相对路径. 默认: <comment>{$root}</comment>"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-i, --ipaddr", "    ", "IP地址"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-p, --port", "      ", "端口号"));
+        $output->writeln(sprintf("  <info>%s</info> %s %s", "-x, --path", "      ", "Web相对路径. 默认: <comment>{$root}</comment>"));
         $output->writeln(sprintf("  <info>%s</info> %s %s", "-h, --help", "      ", "Show this help"));
         $output->writeln("");
         $output->writeln("<comment>Available commands:</comment>");
@@ -83,7 +85,7 @@ try {
     $docker = $input->getOption('container');
     putenv("APP_ENV=$env");
     putenv("DOCKER_CONTAINER={$docker}");
-    $server = new Server(new Application($path));
+    $server = new Server(new Application($path), $input);
     $server->run($input);
 } catch(\Throwable $e) {
     $output->writeln('');
